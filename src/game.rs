@@ -23,5 +23,7 @@ impl GameState {
 impl geng::State for GameState {
     fn draw(&mut self, framebuffer: &mut geng::prelude::ugli::Framebuffer) {
         ugli::clear(framebuffer, Some(Rgba::BLACK), None, None);
+
+        self.render.draw_game(&self.model, framebuffer);
     }
 }

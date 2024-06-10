@@ -28,7 +28,7 @@ impl Collider {
         }
     }
 
-    pub fn transform_mat(&self, camera: &Camera) -> mat3<Coord> {
+    pub fn transform_mat(&self) -> mat3<Coord> {
         mat3::translate(self.position) * mat3::rotate(self.rotation)
     }
 
