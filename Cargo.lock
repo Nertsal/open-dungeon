@@ -56,6 +56,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "allocator-api2"
+version = "0.2.18"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "5c6cb57a04249c6480766f7f7cef5467412af1490f8d1e243141daddada3264f"
+
+[[package]]
 name = "alsa"
 version = "0.9.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -159,6 +165,15 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "b3d1d046238990b9cf5bcde22a3fb3584ee5cf65fb2765f454ed428c7a0063da"
 dependencies = [
  "backtrace",
+]
+
+[[package]]
+name = "approx"
+version = "0.5.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "cab112f0a86d568ea0e627cc1d6be74a1e9cd55214684db5561995f6dad897c6"
+dependencies = [
+ "num-traits",
 ]
 
 [[package]]
@@ -387,12 +402,6 @@ name = "atomic-waker"
 version = "1.1.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "1505bd5d3d116872e7271a6d4e16d81d0c8570876c8de68093a09ac269d8aac0"
-
-[[package]]
-name = "atomic_float"
-version = "0.1.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "62af46d040ba9df09edc6528dae9d8e49f5f3e82f55b7d2ec31a733c38dbc49d"
 
 [[package]]
 name = "autocfg"
@@ -1017,12 +1026,6 @@ name = "clap_lex"
 version = "0.7.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "4b82cf0babdbd58558212896d1a4272303a57bdb245c2bf1147185fb45640e70"
-
-[[package]]
-name = "claxon"
-version = "0.4.3"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4bfbf56724aa9eca8afa4fcfadeb479e722935bb2a0900c2d37e0cc477af0688"
 
 [[package]]
 name = "color_quant"
@@ -1778,80 +1781,29 @@ dependencies = [
 
 [[package]]
 name = "geng"
-version = "0.17.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3fb2e36c26c11dc87aa068a89e6a6a4e114b47d0832baa8205efe937b33cf9c9"
-dependencies = [
- "batbox",
- "console_error_panic_hook",
- "geng-asset 0.17.2",
- "geng-async-state 0.17.2",
- "geng-audio 0.17.2",
- "geng-camera 0.17.2",
- "geng-debug_overlay 0.17.2",
- "geng-draw2d 0.17.2",
- "geng-font 0.17.2",
- "geng-net 0.17.2",
- "geng-obj 0.17.2",
- "geng-shader 0.17.2",
- "geng-state 0.17.2",
- "geng-texture-atlas 0.17.2",
- "geng-ui 0.17.2",
- "geng-window 0.17.2",
- "gilrs",
- "serde",
- "ugli 0.17.2",
- "wasm-bindgen",
-]
-
-[[package]]
-name = "geng"
 version = "0.18.0"
 source = "git+https://github.com/geng-engine/geng?rev=38a550f6389d8b2720fefd2f42b5fb58fba106c2#38a550f6389d8b2720fefd2f42b5fb58fba106c2"
 dependencies = [
  "batbox",
  "console_error_panic_hook",
- "geng-asset 0.18.0",
- "geng-async-state 0.18.0",
- "geng-audio 0.18.0",
- "geng-camera 0.18.0",
- "geng-debug_overlay 0.18.0",
- "geng-draw2d 0.18.0",
- "geng-font 0.18.0",
- "geng-net 0.18.0",
- "geng-obj 0.18.0",
- "geng-shader 0.18.0",
- "geng-state 0.18.0",
- "geng-texture-atlas 0.18.0",
- "geng-ui 0.18.0",
- "geng-window 0.18.0",
+ "geng-asset",
+ "geng-async-state",
+ "geng-audio",
+ "geng-camera",
+ "geng-debug_overlay",
+ "geng-draw2d",
+ "geng-font",
+ "geng-net",
+ "geng-obj",
+ "geng-shader",
+ "geng-state",
+ "geng-texture-atlas",
+ "geng-ui",
+ "geng-window",
  "gilrs",
  "serde",
- "ugli 0.18.0",
+ "ugli",
  "wasm-bindgen",
-]
-
-[[package]]
-name = "geng-asset"
-version = "0.17.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "307b4f624854db3126bb6ff881a7a479d40f809711514d71e7b7948c5aaec7a1"
-dependencies = [
- "anyhow",
- "batbox-file",
- "futures",
- "geng-asset-derive 0.17.2",
- "geng-audio 0.17.2",
- "geng-font 0.17.2",
- "geng-shader 0.17.2",
- "geng-window 0.17.2",
- "image",
- "log",
- "notify",
- "serde_json",
- "ugli 0.17.2",
- "wasm-bindgen",
- "web-sys",
 ]
 
 [[package]]
@@ -1862,30 +1814,18 @@ dependencies = [
  "anyhow",
  "batbox-file",
  "futures",
- "geng-asset-derive 0.18.0",
- "geng-audio 0.18.0",
- "geng-font 0.18.0",
- "geng-shader 0.18.0",
- "geng-window 0.18.0",
+ "geng-asset-derive",
+ "geng-audio",
+ "geng-font",
+ "geng-shader",
+ "geng-window",
  "image",
  "log",
  "notify",
  "serde_json",
- "ugli 0.18.0",
+ "ugli",
  "wasm-bindgen",
  "web-sys",
-]
-
-[[package]]
-name = "geng-asset-derive"
-version = "0.17.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ef7896459152fd0a92cfd781619e9274572fe1296571cba4c0ed5ad718d84a99"
-dependencies = [
- "darling",
- "proc-macro2",
- "quote",
- "syn 2.0.66",
 ]
 
 [[package]]
@@ -1901,23 +1841,6 @@ dependencies = [
 
 [[package]]
 name = "geng-async-state"
-version = "0.17.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "599aa969e234da4e028937e128ec1b1cae2105836f1998a64f8880941c6b14b1"
-dependencies = [
- "async-trait",
- "batbox-la",
- "batbox-time",
- "futures",
- "geng-ui 0.17.2",
- "geng-window 0.17.2",
- "scoped-tls-hkt",
- "switch-resume",
- "ugli 0.17.2",
-]
-
-[[package]]
-name = "geng-async-state"
 version = "0.18.0"
 source = "git+https://github.com/geng-engine/geng?rev=38a550f6389d8b2720fefd2f42b5fb58fba106c2#38a550f6389d8b2720fefd2f42b5fb58fba106c2"
 dependencies = [
@@ -1925,31 +1848,11 @@ dependencies = [
  "batbox-la",
  "batbox-time",
  "futures",
- "geng-ui 0.18.0",
- "geng-window 0.18.0",
+ "geng-ui",
+ "geng-window",
  "scoped-tls-hkt",
  "switch-resume",
- "ugli 0.18.0",
-]
-
-[[package]]
-name = "geng-audio"
-version = "0.17.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "28661b97cf813b833a0a11d18e3a8418278b469a84bb21f49daedc5c2b790f00"
-dependencies = [
- "anyhow",
- "atomic_float",
- "batbox-file",
- "batbox-la",
- "batbox-num",
- "batbox-time",
- "futures",
- "geng-rodio",
- "js-sys",
- "wasm-bindgen",
- "wasm-bindgen-futures",
- "web-sys",
+ "ugli",
 ]
 
 [[package]]
@@ -1966,44 +1869,13 @@ dependencies = [
 
 [[package]]
 name = "geng-camera"
-version = "0.17.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "bcfa07af70ede5beec54afa3bcf3620c48b050bd706de7d2a24a12c9a2630bd4"
-dependencies = [
- "batbox-la",
- "batbox-lapp",
- "serde",
- "ugli 0.17.2",
-]
-
-[[package]]
-name = "geng-camera"
 version = "0.18.0"
 source = "git+https://github.com/geng-engine/geng?rev=38a550f6389d8b2720fefd2f42b5fb58fba106c2#38a550f6389d8b2720fefd2f42b5fb58fba106c2"
 dependencies = [
  "batbox-la",
  "batbox-lapp",
  "serde",
- "ugli 0.18.0",
-]
-
-[[package]]
-name = "geng-debug_overlay"
-version = "0.17.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2f2de9386bf26c6099e6358653e6876bfb6ca3337bc9b436b3397470dbdce806"
-dependencies = [
- "batbox-color",
- "batbox-la",
- "batbox-logger",
- "batbox-time",
- "geng-camera 0.17.2",
- "geng-draw2d 0.17.2",
- "geng-ui 0.17.2",
- "geng-window 0.17.2",
- "log",
- "once_cell",
- "ugli 0.17.2",
+ "ugli",
 ]
 
 [[package]]
@@ -2015,29 +1887,13 @@ dependencies = [
  "batbox-la",
  "batbox-logger",
  "batbox-time",
- "geng-camera 0.18.0",
- "geng-draw2d 0.18.0",
- "geng-ui 0.18.0",
- "geng-window 0.18.0",
+ "geng-camera",
+ "geng-draw2d",
+ "geng-ui",
+ "geng-window",
  "log",
  "once_cell",
- "ugli 0.18.0",
-]
-
-[[package]]
-name = "geng-draw2d"
-version = "0.17.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1b17925a7c5e564757a71f7b9c2ae3741c27a53b568eaa71059f09123af7ca54"
-dependencies = [
- "batbox-approx",
- "batbox-color",
- "batbox-la",
- "batbox-lapp",
- "geng-camera 0.17.2",
- "geng-font 0.17.2",
- "geng-shader 0.17.2",
- "ugli 0.17.2",
+ "ugli",
 ]
 
 [[package]]
@@ -2049,28 +1905,10 @@ dependencies = [
  "batbox-color",
  "batbox-la",
  "batbox-lapp",
- "geng-camera 0.18.0",
- "geng-font 0.18.0",
- "geng-shader 0.18.0",
- "ugli 0.18.0",
-]
-
-[[package]]
-name = "geng-font"
-version = "0.17.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e61962589769c3e8bc5a22208f779b4605daf5cc1fa6c1005f7122db34c04fc2"
-dependencies = [
- "anyhow",
- "batbox-color",
- "batbox-la",
- "batbox-num",
- "geng-camera 0.17.2",
- "geng-shader 0.17.2",
- "itertools 0.12.1",
- "serde",
- "ttf-parser 0.20.0",
- "ugli 0.17.2",
+ "geng-camera",
+ "geng-font",
+ "geng-shader",
+ "ugli",
 ]
 
 [[package]]
@@ -2082,31 +1920,12 @@ dependencies = [
  "batbox-color",
  "batbox-la",
  "batbox-num",
- "geng-camera 0.18.0",
- "geng-shader 0.18.0",
+ "geng-camera",
+ "geng-shader",
  "itertools 0.12.1",
  "serde",
  "ttf-parser 0.20.0",
- "ugli 0.18.0",
-]
-
-[[package]]
-name = "geng-net"
-version = "0.17.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3dd7e08db6409d747b41725f856c2244e7c888044b3dd068a8034838360ed3cd"
-dependencies = [
- "anyhow",
- "batbox-time",
- "bincode",
- "flate2",
- "futures",
- "js-sys",
- "log",
- "serde",
- "wasm-bindgen",
- "web-sys",
- "ws",
+ "ugli",
 ]
 
 [[package]]
@@ -2129,44 +1948,11 @@ dependencies = [
 
 [[package]]
 name = "geng-obj"
-version = "0.17.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4c20646538b384995c196e641e1c425b86faa95189e0f48d8788cb44962e7ac0"
-dependencies = [
- "batbox-la",
- "ugli 0.17.2",
-]
-
-[[package]]
-name = "geng-obj"
 version = "0.18.0"
 source = "git+https://github.com/geng-engine/geng?rev=38a550f6389d8b2720fefd2f42b5fb58fba106c2#38a550f6389d8b2720fefd2f42b5fb58fba106c2"
 dependencies = [
  "batbox-la",
- "ugli 0.18.0",
-]
-
-[[package]]
-name = "geng-rodio"
-version = "0.17.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e31bd2fc5b9f17b9854d236a0c565d3fe1da54216b5471c13a975a123a9fd08b"
-dependencies = [
- "claxon",
- "cpal",
- "hound",
- "lewton",
- "symphonia",
-]
-
-[[package]]
-name = "geng-shader"
-version = "0.17.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "45c2bb32853e022922b495cdf044f3935f61fd91b242d94722dc176e9461fc73"
-dependencies = [
- "anyhow",
- "ugli 0.17.2",
+ "ugli",
 ]
 
 [[package]]
@@ -2175,18 +1961,7 @@ version = "0.18.0"
 source = "git+https://github.com/geng-engine/geng?rev=38a550f6389d8b2720fefd2f42b5fb58fba106c2#38a550f6389d8b2720fefd2f42b5fb58fba106c2"
 dependencies = [
  "anyhow",
- "ugli 0.18.0",
-]
-
-[[package]]
-name = "geng-state"
-version = "0.17.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f3f0988bc2ea4c68b1811996d1b0f5de514d3ef72a05e9cfeb7680916edd8811"
-dependencies = [
- "geng-ui 0.17.2",
- "geng-window 0.17.2",
- "ugli 0.17.2",
+ "ugli",
 ]
 
 [[package]]
@@ -2194,19 +1969,9 @@ name = "geng-state"
 version = "0.18.0"
 source = "git+https://github.com/geng-engine/geng?rev=38a550f6389d8b2720fefd2f42b5fb58fba106c2#38a550f6389d8b2720fefd2f42b5fb58fba106c2"
 dependencies = [
- "geng-ui 0.18.0",
- "geng-window 0.18.0",
- "ugli 0.18.0",
-]
-
-[[package]]
-name = "geng-texture-atlas"
-version = "0.17.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "bc06a50dfbe3d2de3ab13dc6028b7d98d4984cacac50bdc0ea127cf68611a70b"
-dependencies = [
- "batbox-la",
- "ugli 0.17.2",
+ "geng-ui",
+ "geng-window",
+ "ugli",
 ]
 
 [[package]]
@@ -2215,25 +1980,7 @@ version = "0.18.0"
 source = "git+https://github.com/geng-engine/geng?rev=38a550f6389d8b2720fefd2f42b5fb58fba106c2#38a550f6389d8b2720fefd2f42b5fb58fba106c2"
 dependencies = [
  "batbox-la",
- "ugli 0.18.0",
-]
-
-[[package]]
-name = "geng-ui"
-version = "0.17.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a272cb989b68b20ec6355b31b5ea22d76dc9969092241213a703b0cb9990f97d"
-dependencies = [
- "batbox-cmp",
- "batbox-color",
- "batbox-la",
- "batbox-tuple-macros",
- "derive_more",
- "geng-camera 0.17.2",
- "geng-draw2d 0.17.2",
- "geng-font 0.17.2",
- "geng-window 0.17.2",
- "ugli 0.17.2",
+ "ugli",
 ]
 
 [[package]]
@@ -2246,11 +1993,11 @@ dependencies = [
  "batbox-la",
  "batbox-tuple-macros",
  "derive_more",
- "geng-camera 0.18.0",
- "geng-draw2d 0.18.0",
- "geng-font 0.18.0",
- "geng-window 0.18.0",
- "ugli 0.18.0",
+ "geng-camera",
+ "geng-draw2d",
+ "geng-font",
+ "geng-window",
+ "ugli",
 ]
 
 [[package]]
@@ -2259,7 +2006,7 @@ version = "0.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "54048cd0fa44312cfe4df52859932ba6c2b17c78ae507419166d970f073a68da"
 dependencies = [
- "geng 0.17.2",
+ "geng",
  "image",
  "serde",
 ]
@@ -2281,34 +2028,6 @@ dependencies = [
 
 [[package]]
 name = "geng-window"
-version = "0.17.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e656b01b13769e7e7ba6d3f81fce35a865ed9fee55f63d435d8518e0441adde9"
-dependencies = [
- "anyhow",
- "async-broadcast",
- "async-executor",
- "batbox-android",
- "batbox-la",
- "clap",
- "futures",
- "gilrs",
- "glutin",
- "glutin-winit",
- "image",
- "js-sys",
- "log",
- "raw-window-handle 0.5.2",
- "serde",
- "strum",
- "ugli 0.17.2",
- "wasm-bindgen",
- "web-sys",
- "winit",
-]
-
-[[package]]
-name = "geng-window"
 version = "0.18.0"
 source = "git+https://github.com/geng-engine/geng?rev=38a550f6389d8b2720fefd2f42b5fb58fba106c2#38a550f6389d8b2720fefd2f42b5fb58fba106c2"
 dependencies = [
@@ -2328,7 +2047,7 @@ dependencies = [
  "raw-window-handle 0.5.2",
  "serde",
  "strum",
- "ugli 0.18.0",
+ "ugli",
  "wasm-bindgen",
  "web-sys",
  "winit",
@@ -2557,6 +2276,10 @@ name = "hashbrown"
 version = "0.14.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "e5274423e17b7c9fc20b6e7e208532f9b19825d82dfd615708b70edd83df41f1"
+dependencies = [
+ "ahash",
+ "allocator-api2",
+]
 
 [[package]]
 name = "heck"
@@ -3090,17 +2813,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "03087c2bad5e1034e8cace5926dec053fb3790248370865f5117a7d0213354c8"
 
 [[package]]
-name = "lewton"
-version = "0.10.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "777b48df9aaab155475a83a7df3070395ea1ac6902f5cd062b8f2b028075c030"
-dependencies = [
- "byteorder",
- "ogg",
- "tinyvec",
-]
-
-[[package]]
 name = "libc"
 version = "0.2.155"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3115,6 +2827,12 @@ dependencies = [
  "cfg-if 1.0.0",
  "windows-targets 0.52.5",
 ]
+
+[[package]]
+name = "libm"
+version = "0.2.8"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "4ec2a862134d2a7d32d7983ddcdd1c4923530833c9f2ea1a44fc5fa473989058"
 
 [[package]]
 name = "libredox"
@@ -3204,6 +2922,16 @@ name = "maplit"
 version = "1.0.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "3e2e65a1a2e43cfcb47a895c4c8b10d1f4a61097f9f254f183aee60cad9c651d"
+
+[[package]]
+name = "matrixmultiply"
+version = "0.3.8"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "7574c1cf36da4798ab73da5b215bbf444f50718207754cb522201d78d1cd0ff2"
+dependencies = [
+ "autocfg",
+ "rawpointer",
+]
 
 [[package]]
 name = "memchr"
@@ -3304,6 +3032,21 @@ dependencies = [
  "net2",
  "winapi 0.2.8",
  "ws2_32-sys",
+]
+
+[[package]]
+name = "nalgebra"
+version = "0.32.5"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "3ea4908d4f23254adda3daa60ffef0f1ac7b8c3e9a864cf3cc154b251908a2ef"
+dependencies = [
+ "approx",
+ "matrixmultiply",
+ "num-complex",
+ "num-rational",
+ "num-traits",
+ "simba",
+ "typenum",
 ]
 
 [[package]]
@@ -3459,12 +3202,23 @@ dependencies = [
 ]
 
 [[package]]
+name = "num-rational"
+version = "0.4.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f83d14da390562dca69fc84082e73e548e1ad308d24accdedd2720017cb37824"
+dependencies = [
+ "num-integer",
+ "num-traits",
+]
+
+[[package]]
 name = "num-traits"
 version = "0.2.19"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "071dfc062690e90b734c0b2273ce72ad0ffa95f0c74596bc250dcfd960262841"
 dependencies = [
  "autocfg",
+ "libm",
 ]
 
 [[package]]
@@ -3597,15 +3351,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "ogg"
-version = "0.8.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6951b4e8bf21c8193da321bcce9c9dd2e13c858fe078bf9054a288b419ae5d6e"
-dependencies = [
- "byteorder",
-]
-
-[[package]]
 name = "once_cell"
 version = "1.19.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3622,8 +3367,10 @@ name = "open-island"
 version = "0.1.0"
 dependencies = [
  "clap",
- "geng 0.18.0",
+ "geng",
  "geng-utils",
+ "parry2d",
+ "serde",
 ]
 
 [[package]]
@@ -3655,6 +3402,34 @@ name = "parking"
 version = "2.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "bb813b8af86854136c6922af0598d719255ecb2179515e6e7730d468f05c9cae"
+
+[[package]]
+name = "parry2d"
+version = "0.15.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "41c56bf3b44b08f18a6ed01e5c6bf1a41a12efc7e8b806ce0cf50831c88f9fc8"
+dependencies = [
+ "approx",
+ "arrayvec",
+ "bitflags 1.3.2",
+ "downcast-rs",
+ "either",
+ "log",
+ "nalgebra",
+ "num-derive 0.4.2",
+ "num-traits",
+ "rustc-hash",
+ "simba",
+ "slab",
+ "smallvec",
+ "spade",
+]
+
+[[package]]
+name = "paste"
+version = "1.0.15"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "57c0d7b74b563b49d38dae00a0c37d4d6de9b432382b2892f0574ddcae73fd0a"
 
 [[package]]
 name = "percent-encoding"
@@ -3895,6 +3670,12 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "20675572f6f24e9e76ef639bc5552774ed45f1c30e2951e1e99c59888861c539"
 
 [[package]]
+name = "rawpointer"
+version = "0.2.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "60a357793950651c4ed0f3f52338f53b2f809f32d83a07f72909fa13e4c6c1e3"
+
+[[package]]
 name = "rayon"
 version = "1.10.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -4040,6 +3821,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "robust"
+version = "1.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "cbf4a6aa5f6d6888f39e980649f3ad6b666acdce1d78e95b8a2cb076e687ae30"
+
+[[package]]
 name = "ron"
 version = "0.8.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -4174,6 +3961,15 @@ name = "ryu"
 version = "1.0.18"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "f3cb5ba0dc43242ce17de99c180e96db90b235b8a9fdc9543c96d2209116bd9f"
+
+[[package]]
+name = "safe_arch"
+version = "0.7.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f398075ce1e6a179b46f51bd88d0598b92b00d3551f1a2d4ac49e771b56ac354"
+dependencies = [
+ "bytemuck",
+]
 
 [[package]]
 name = "same-file"
@@ -4313,6 +4109,19 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "0fda2ff0d084019ba4d7c6f371c95d8fd75ce3524c3cb8fb653a3023f6323e64"
 
 [[package]]
+name = "simba"
+version = "0.8.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "061507c94fc6ab4ba1c9a0305018408e312e17c041eb63bef8aa726fa33aceae"
+dependencies = [
+ "approx",
+ "num-complex",
+ "num-traits",
+ "paste",
+ "wide",
+]
+
+[[package]]
 name = "simd-adler32"
 version = "0.3.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -4385,6 +4194,18 @@ checksum = "ce305eb0b4296696835b71df73eb912e0f1ffd2556a501fcede6e0c50349191c"
 dependencies = [
  "libc",
  "windows-sys 0.52.0",
+]
+
+[[package]]
+name = "spade"
+version = "2.8.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "5b20a809169ae442497e41a997fc5f14e2eea04e6ac590816a910d5d8068c8c0"
+dependencies = [
+ "hashbrown",
+ "num-traits",
+ "robust",
+ "smallvec",
 ]
 
 [[package]]
@@ -4794,21 +4615,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "tinyvec"
-version = "1.6.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "87cc5ceb3875bb20c2890005a4e226a4651264a5c75edb2421b52861a0a0cb50"
-dependencies = [
- "tinyvec_macros",
-]
-
-[[package]]
-name = "tinyvec_macros"
-version = "0.1.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1f3ccbac311fea05f86f61904b462b55fb3df8837a366dfc601a0161d0532f20"
-
-[[package]]
 name = "tokio"
 version = "1.38.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -4963,30 +4769,6 @@ checksum = "42ff0bf0c66b8238c6f3b578df37d0b7848e55df8577b3f74f92a69acceeb825"
 
 [[package]]
 name = "ugli"
-version = "0.17.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c184013767e9b90d06de2f7b0eddb6942e1233f7112a6827b6c5adf95e8040a5"
-dependencies = [
- "batbox-color",
- "batbox-la",
- "batbox-range",
- "derive_more",
- "field-offset",
- "glutin",
- "image",
- "log",
- "num_enum 0.7.2",
- "serde",
- "serde-wasm-bindgen",
- "thiserror",
- "ugli-derive 0.17.2",
- "ugli-raw 0.17.2",
- "wasm-bindgen",
- "web-sys",
-]
-
-[[package]]
-name = "ugli"
 version = "0.18.0"
 source = "git+https://github.com/geng-engine/geng?rev=38a550f6389d8b2720fefd2f42b5fb58fba106c2#38a550f6389d8b2720fefd2f42b5fb58fba106c2"
 dependencies = [
@@ -5002,22 +4784,10 @@ dependencies = [
  "serde",
  "serde-wasm-bindgen",
  "thiserror",
- "ugli-derive 0.18.0",
- "ugli-raw 0.18.0",
+ "ugli-derive",
+ "ugli-raw",
  "wasm-bindgen",
  "web-sys",
-]
-
-[[package]]
-name = "ugli-derive"
-version = "0.17.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f7a177bc43a36c9f755b3cac28c13685fd7b5f171745dc3e395de8e510d17547"
-dependencies = [
- "darling",
- "proc-macro2",
- "quote",
- "syn 2.0.66",
 ]
 
 [[package]]
@@ -5029,18 +4799,6 @@ dependencies = [
  "proc-macro2",
  "quote",
  "syn 2.0.66",
-]
-
-[[package]]
-name = "ugli-raw"
-version = "0.17.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ff627cfacb67d5c56657df7512eb94761aba1d6bd68c8376e1034149a3829df2"
-dependencies = [
- "gl",
- "js-sys",
- "wasm-bindgen",
- "web-sys",
 ]
 
 [[package]]
@@ -5419,6 +5177,16 @@ name = "weezl"
 version = "0.1.8"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "53a85b86a771b1c87058196170769dd264f66c0782acf1ae6cc51bfd64b39082"
+
+[[package]]
+name = "wide"
+version = "0.7.24"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "8a040b111774ab63a19ef46bbc149398ab372b4ccdcfd719e9814dbd7dfd76c8"
+dependencies = [
+ "bytemuck",
+ "safe_arch",
+]
 
 [[package]]
 name = "winapi"
