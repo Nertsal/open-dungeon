@@ -13,6 +13,12 @@ pub type Time = R32;
 pub struct Model {
     pub camera: Camera,
     pub player: Player,
+    pub objects: Vec<Object>,
+}
+
+#[derive(Debug, Clone)]
+pub struct Object {
+    pub collider: Collider,
 }
 
 #[derive(Debug, Clone)]
@@ -33,6 +39,9 @@ impl Model {
                 collider: Collider::new(vec2::ZERO, Shape::circle(0.5)),
                 speed: config.player.speed,
             },
+            objects: vec![Object {
+                collider: Collider::new(vec2(3.0, 2.0).as_r32(), Shape::circle(0.6)),
+            }],
         }
     }
 }

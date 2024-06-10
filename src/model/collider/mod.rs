@@ -73,6 +73,7 @@ impl Collider {
     }
 
     /// Return the collision info if the two colliders are intersecting.
+    /// The normal of the collision points from `self` to `other`.
     pub fn collide(&self, other: &Self) -> Option<Collision> {
         let delta = (other.position - self.position).as_f32();
 

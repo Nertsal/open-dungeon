@@ -14,9 +14,15 @@ impl GameRender {
     }
 
     pub fn draw_game(&mut self, model: &Model, framebuffer: &mut ugli::Framebuffer) {
+        // Objects
+        for object in &model.objects {
+            self.draw_collider(&object.collider, Rgba::RED, &model.camera, framebuffer);
+        }
+
+        // Player
         self.draw_collider(
             &model.player.collider,
-            Rgba::RED,
+            Rgba::GREEN,
             &model.camera,
             framebuffer,
         );
