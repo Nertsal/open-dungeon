@@ -1,0 +1,5 @@
+Config(
+    player: PlayerConfig(
+        speed: 5.0,
+    ),
+)

@@ -1,0 +1,6 @@
+Controls(
+    left: [Key(ArrowLeft), Key(A)],
+    right: [Key(ArrowRight), Key(D)],
+    down: [Key(ArrowDown), Key(S)],
+    up: [Key(ArrowUp), Key(W)],
+)
