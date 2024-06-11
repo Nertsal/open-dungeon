@@ -15,6 +15,8 @@ pub struct Controls {
     pub right: Vec<geng_utils::key::EventKey>,
     pub down: Vec<geng_utils::key::EventKey>,
     pub up: Vec<geng_utils::key::EventKey>,
+
+    pub draw: Vec<geng_utils::key::EventKey>,
 }
 
 #[derive(geng::asset::Load, Debug, Clone, Serialize, Deserialize)]

@@ -3,4 +3,6 @@ Controls(
     right: [Key(ArrowRight), Key(D)],
     down: [Key(ArrowDown), Key(S)],
     up: [Key(ArrowUp), Key(W)],
+
+    draw: [Mouse(Left)],
 )

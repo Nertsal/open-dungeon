@@ -14,6 +14,22 @@ impl GameRender {
     }
 
     pub fn draw_game(&mut self, model: &Model, framebuffer: &mut ugli::Framebuffer) {
+        if let Some(drawing) = &model.player.draw_action {
+            // Drawing
+            let points = drawing
+                .points
+                .iter()
+                .map(|point| point.position.as_f32())
+                .dedup_by(|a, b| (*a - *b).len_sqr() < 0.01)
+                .collect();
+            // let chain = Chain::new(points);
+            let chain = CardinalSpline::new(points, 0.5).chain(3);
+            let chain = draw2d::Chain::new(chain, 0.1, Rgba::WHITE, 3);
+            self.geng
+                .draw2d()
+                .draw2d(framebuffer, &model.camera, &chain);
+        }
+
         // Objects
         for object in &model.objects {
             self.draw_collider(&object.collider, Rgba::RED, &model.camera, framebuffer);
