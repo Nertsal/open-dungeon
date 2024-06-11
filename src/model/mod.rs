@@ -11,6 +11,8 @@ pub type Camera = Camera2d;
 pub type Coord = R32;
 pub type Position = vec2<Coord>;
 pub type Time = R32;
+pub type Hp = R32;
+pub type Health = Bounded<Hp>;
 
 pub struct Model {
     pub config: Config,
@@ -20,6 +22,7 @@ pub struct Model {
 
     pub player: Player,
     pub objects: Vec<Object>,
+    pub enemies: Vec<Enemy>,
 }
 
 #[derive(Debug, Clone)]
@@ -28,7 +31,14 @@ pub struct Object {
 }
 
 #[derive(Debug, Clone)]
+pub struct Enemy {
+    pub health: Health,
+    pub collider: Collider,
+}
+
+#[derive(Debug, Clone)]
 pub struct Player {
+    pub health: Health,
     pub collider: Collider,
     pub velocity: vec2<Coord>,
     pub stats: PlayerConfig,
@@ -37,7 +47,8 @@ pub struct Player {
 
 #[derive(Debug, Clone)]
 pub struct Drawing {
-    pub points: VecDeque<DrawPoint>,
+    pub points_raw: VecDeque<DrawPoint>,
+    pub points_smoothed: Vec<Position>,
 }
 
 #[derive(Debug, Clone)]
@@ -64,6 +75,7 @@ impl Model {
             game_time: Time::ZERO,
 
             player: Player {
+                health: Health::new_max(config.player.health),
                 collider: Collider::new(vec2::ZERO, Shape::circle(0.5)),
                 velocity: vec2::ZERO,
                 stats: config.player.clone(),
@@ -72,6 +84,16 @@ impl Model {
             objects: vec![Object {
                 collider: Collider::new(vec2(3.0, 2.0).as_r32(), Shape::circle(0.6)),
             }],
+            enemies: vec![
+                Enemy {
+                    health: Health::new_max(r32(10.0)),
+                    collider: Collider::new(vec2(5.0, -3.0).as_r32(), Shape::square(0.4)),
+                },
+                Enemy {
+                    health: Health::new_max(r32(10.0)),
+                    collider: Collider::new(vec2(3.0, -2.0).as_r32(), Shape::circle(0.4)),
+                },
+            ],
 
             config,
         }

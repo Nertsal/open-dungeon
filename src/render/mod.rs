@@ -17,13 +17,11 @@ impl GameRender {
         if let Some(drawing) = &model.player.draw_action {
             // Drawing
             let points = drawing
-                .points
+                .points_smoothed
                 .iter()
-                .map(|point| point.position.as_f32())
-                .dedup_by(|a, b| (*a - *b).len_sqr() < 0.01)
+                .map(|pos| pos.as_f32())
                 .collect();
-            // let chain = Chain::new(points);
-            let chain = CardinalSpline::new(points, 0.5).chain(3);
+            let chain = Chain::new(points);
             let chain = draw2d::Chain::new(chain, 0.1, Rgba::WHITE, 3);
             self.geng
                 .draw2d()
@@ -33,6 +31,11 @@ impl GameRender {
         // Objects
         for object in &model.objects {
             self.draw_collider(&object.collider, Rgba::RED, &model.camera, framebuffer);
+        }
+
+        // Enemies
+        for enemy in &model.enemies {
+            self.draw_collider(&enemy.collider, Rgba::CYAN, &model.camera, framebuffer);
         }
 
         // Player

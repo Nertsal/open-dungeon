@@ -1,6 +1,4 @@
-use crate::prelude::Coord;
-
-use geng::prelude::*;
+use crate::prelude::*;
 
 #[derive(geng::asset::Load)]
 pub struct Assets {
@@ -25,10 +23,17 @@ pub struct Config {
     pub player: PlayerConfig,
 }
 
-#[derive(geng::asset::Load, Debug, Clone, Serialize, Deserialize)]
-#[load(serde = "ron")]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct PlayerConfig {
+    pub health: Hp,
     pub speed: Coord,
     pub acceleration: Coord,
-    pub dash_speed: Coord,
+    pub dash: DashConfig,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct DashConfig {
+    pub speed: Coord,
+    pub width: Coord,
+    pub damage: Hp,
 }
