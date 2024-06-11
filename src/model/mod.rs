@@ -13,6 +13,7 @@ pub type Position = vec2<Coord>;
 pub type Time = R32;
 
 pub struct Model {
+    pub config: Config,
     pub camera: Camera,
     pub real_time: Time,
     pub game_time: Time,
@@ -29,7 +30,8 @@ pub struct Object {
 #[derive(Debug, Clone)]
 pub struct Player {
     pub collider: Collider,
-    pub speed: Coord,
+    pub velocity: vec2<Coord>,
+    pub stats: PlayerConfig,
     pub draw_action: Option<Drawing>,
 }
 
@@ -63,12 +65,15 @@ impl Model {
 
             player: Player {
                 collider: Collider::new(vec2::ZERO, Shape::circle(0.5)),
-                speed: config.player.speed,
+                velocity: vec2::ZERO,
+                stats: config.player.clone(),
                 draw_action: None,
             },
             objects: vec![Object {
                 collider: Collider::new(vec2(3.0, 2.0).as_r32(), Shape::circle(0.6)),
             }],
+
+            config,
         }
     }
 }

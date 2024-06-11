@@ -1,5 +1,7 @@
 Config(
     player: PlayerConfig(
         speed: 5.0,
+        dash_speed: 10.0,
+        acceleration: 20.0,
     ),
 )

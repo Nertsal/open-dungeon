@@ -29,4 +29,6 @@ pub struct Config {
 #[load(serde = "ron")]
 pub struct PlayerConfig {
     pub speed: Coord,
+    pub acceleration: Coord,
+    pub dash_speed: Coord,
 }
