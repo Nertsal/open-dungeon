@@ -37,20 +37,30 @@ impl ParticleDistribution {
                     .windows(2)
                     .flat_map(|segment| {
                         let &[a, b] = segment else { unreachable!() };
+                        let n = (b - a).normalize_or_zero().rotate_90();
 
                         let amount = density * (b - a).len() * *width;
                         left_out += amount.fract();
                         let amount = (amount.floor() + left_out.floor()).as_f32() as usize;
                         left_out = left_out.fract();
 
+                        let us: Vec<_> = rng
+                            .sample_iter(rand::distributions::Uniform::new_inclusive(
+                                -R32::ONE,
+                                R32::ONE,
+                            ))
+                            .take(amount)
+                            .collect();
                         let ts: Vec<_> = rng
                             .sample_iter(rand::distributions::Uniform::new_inclusive(
                                 R32::ZERO,
                                 R32::ONE,
                             ))
+                            .zip(us)
                             .take(amount)
                             .collect();
-                        ts.into_iter().map(move |t| a + (b - a) * t)
+                        ts.into_iter()
+                            .map(move |(t, u)| a + (b - a) * t + n * *width * u)
                     })
                     .collect()
             }
