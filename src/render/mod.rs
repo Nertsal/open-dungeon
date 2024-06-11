@@ -52,6 +52,21 @@ impl GameRender {
             &model.camera,
             framebuffer,
         );
+
+        // Particles TODO instance
+        for (_, particle) in &model.particles {
+            let t = crate::util::smoothstep(particle.lifetime.get_ratio()).as_f32();
+            let transform = mat3::scale_uniform(t);
+            let mut color = Rgba::WHITE;
+            color.a = t;
+            self.draw_collider_transformed(
+                transform,
+                &particle.collider,
+                color,
+                &model.camera,
+                framebuffer,
+            );
+        }
     }
 
     pub fn draw_collider(
@@ -61,7 +76,18 @@ impl GameRender {
         camera: &Camera,
         framebuffer: &mut ugli::Framebuffer,
     ) {
-        let transform = collider.transform_mat().as_f32();
+        self.draw_collider_transformed(mat3::identity(), collider, color, camera, framebuffer)
+    }
+
+    pub fn draw_collider_transformed(
+        &self,
+        transform: mat3<f32>,
+        collider: &Collider,
+        color: Rgba<f32>,
+        camera: &Camera,
+        framebuffer: &mut ugli::Framebuffer,
+    ) {
+        let transform = collider.transform_mat().as_f32() * transform;
         match &collider.shape {
             Shape::Circle { radius } => {
                 self.geng.draw2d().draw2d_transformed(

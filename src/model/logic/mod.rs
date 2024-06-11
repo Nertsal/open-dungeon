@@ -22,8 +22,12 @@ impl Model {
         }
     }
 
-    pub fn check_deaths(&mut self, _delta_time: Time) {
+    pub fn check_deaths(&mut self, delta_time: Time) {
         self.enemies.retain(|enemy| enemy.health.is_above_min());
+        self.particles.retain(|_, particle| {
+            particle.lifetime.change(-delta_time);
+            particle.lifetime.is_above_min()
+        });
     }
 
     pub fn damage_around(&mut self, drawing: Drawing, width: Coord, base_damage: Hp) {
@@ -38,6 +42,32 @@ impl Model {
                 enemy.health.change(-base_damage); // TODO: combo scaling
             }
         }
+        self.spawn_particles(SpawnParticles {
+            distribution: ParticleDistribution::Drawing {
+                points: drawing.points_smoothed.clone(),
+                width,
+            },
+            ..default()
+        })
+    }
+
+    pub fn spawn_particles(&mut self, options: SpawnParticles) {
+        let mut rng = thread_rng();
+        let particles = options
+            .distribution
+            .sample(&mut rng, options.density)
+            .into_iter()
+            .map(|position| {
+                let velocity = rng.gen_circle(options.velocity, r32(0.2));
+                let size = rng.gen_range(options.size.clone());
+                let lifetime = rng.gen_range(options.lifetime.clone());
+                Particle {
+                    collider: Collider::new(position, Shape::circle(size)),
+                    velocity,
+                    lifetime: Bounded::new_max(lifetime),
+                }
+            });
+        self.particles.extend(particles);
     }
 }
 

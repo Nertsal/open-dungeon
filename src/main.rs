@@ -3,6 +3,7 @@ mod game;
 mod model;
 mod prelude;
 mod render;
+mod util;
 
 use self::assets::Assets;
 
