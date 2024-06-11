@@ -4,6 +4,7 @@ Config(
         speed: 7.0,
         acceleration: 50.0,
         dash: DashConfig(
+            max_distance: 5.0,
             speed: 10.0,
             width: 0.5,
             damage: 10.0,

@@ -32,39 +32,39 @@ impl ParticleDistribution {
                     .map(|_| rng.gen_circle(center, radius))
                     .collect()
             }
-            ParticleDistribution::Drawing { points, width } => {
-                let mut left_out = R32::ZERO;
-                points
-                    .windows(2)
-                    .flat_map(|segment| {
-                        let &[a, b] = segment else { unreachable!() };
-                        let n = (b - a).normalize_or_zero().rotate_90();
+            ParticleDistribution::Drawing { points, width } => points
+                .windows(2)
+                .flat_map(|segment| {
+                    let &[a, b] = segment else { unreachable!() };
+                    let n = (b - a).normalize_or_zero().rotate_90();
 
-                        let amount = density * (b - a).len() * *width;
-                        left_out += amount.fract();
-                        let amount = (amount.floor() + left_out.floor()).as_f32() as usize;
-                        left_out = left_out.fract();
+                    let amount = density * (b - a).len() * *width;
+                    let extra = if rng.gen_bool(amount.fract().as_f32().into()) {
+                        1
+                    } else {
+                        0
+                    };
+                    let amount = (amount.floor()).as_f32() as usize + extra;
 
-                        let us: Vec<_> = rng
-                            .sample_iter(rand::distributions::Uniform::new_inclusive(
-                                -R32::ONE,
-                                R32::ONE,
-                            ))
-                            .take(amount)
-                            .collect();
-                        let ts: Vec<_> = rng
-                            .sample_iter(rand::distributions::Uniform::new_inclusive(
-                                R32::ZERO,
-                                R32::ONE,
-                            ))
-                            .zip(us)
-                            .take(amount)
-                            .collect();
-                        ts.into_iter()
-                            .map(move |(t, u)| a + (b - a) * t + n * *width * u)
-                    })
-                    .collect()
-            }
+                    let us: Vec<_> = rng
+                        .sample_iter(rand::distributions::Uniform::new_inclusive(
+                            -R32::ONE,
+                            R32::ONE,
+                        ))
+                        .take(amount)
+                        .collect();
+                    let ts: Vec<_> = rng
+                        .sample_iter(rand::distributions::Uniform::new_inclusive(
+                            R32::ZERO,
+                            R32::ONE,
+                        ))
+                        .zip(us)
+                        .take(amount)
+                        .collect();
+                    ts.into_iter()
+                        .map(move |(t, u)| a + (b - a) * t + n * *width * u)
+                })
+                .collect(),
         }
     }
 }

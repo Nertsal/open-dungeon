@@ -40,6 +40,7 @@ pub struct EnemyConfig {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct DashConfig {
+    pub max_distance: Coord,
     pub speed: Coord,
     pub width: Coord,
     pub damage: Hp,

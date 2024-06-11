@@ -6,8 +6,6 @@ pub use self::{collider::*, particles::*};
 
 use crate::prelude::*;
 
-use std::collections::VecDeque;
-
 pub type Camera = Camera2d;
 pub type Coord = R32;
 pub type Position = vec2<Coord>;
@@ -75,7 +73,7 @@ pub struct Player {
 
 #[derive(Debug, Clone)]
 pub struct Drawing {
-    pub points_raw: VecDeque<DrawPoint>,
+    pub points_raw: Vec<DrawPoint>,
     pub points_smoothed: Vec<Position>,
 }
 

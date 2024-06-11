@@ -20,10 +20,19 @@ impl Model {
                     time: self.real_time,
                 };
                 match &mut player.draw_action {
-                    Some(drawing) => drawing.points_raw.push_back(point),
+                    Some(drawing) => {
+                        let distance = drawing
+                            .points_raw
+                            .windows(2)
+                            .map(|segment| (segment[1].position - segment[0].position).len())
+                            .fold(Coord::ZERO, Coord::add);
+                        if distance < player.stats.dash.max_distance {
+                            drawing.points_raw.push(point);
+                        }
+                    }
                     action @ None => {
                         *action = Some(Drawing {
-                            points_raw: vec![point].into(),
+                            points_raw: vec![point],
                             points_smoothed: Vec::new(),
                         })
                     }
@@ -42,6 +51,16 @@ impl Model {
                 let chain = CardinalSpline::new(points, 0.5).chain(3);
                 drawing.points_smoothed =
                     chain.vertices.into_iter().map(|pos| pos.as_r32()).collect();
+
+                self.particles_queue.push(SpawnParticles {
+                    density: r32(0.5),
+                    kind: ParticleKind::Draw,
+                    distribution: ParticleDistribution::Drawing {
+                        points: drawing.points_smoothed.clone(),
+                        width: r32(0.2),
+                    },
+                    ..default()
+                });
             }
             None => self.stop_drawing(),
         }
