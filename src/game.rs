@@ -70,6 +70,7 @@ impl geng::State for GameState {
                 self.cursor.screen_pos.as_f32(),
             )
             .as_r32();
+        self.model.cursor_pos = self.cursor.world_pos;
     }
 
     fn fixed_update(&mut self, delta_time: f64) {

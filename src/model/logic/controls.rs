@@ -21,12 +21,7 @@ impl Model {
                 };
                 match &mut player.draw_action {
                     Some(drawing) => {
-                        let distance = drawing
-                            .points_raw
-                            .windows(2)
-                            .map(|segment| (segment[1].position - segment[0].position).len())
-                            .fold(Coord::ZERO, Coord::add);
-                        if distance < player.stats.dash.max_distance {
+                        if drawing.length() < player.stats.dash.max_distance {
                             drawing.points_raw.push(point);
                         }
                     }

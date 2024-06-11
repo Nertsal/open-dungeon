@@ -18,6 +18,7 @@ pub struct Model {
     pub camera: Camera,
     pub real_time: Time,
     pub game_time: Time,
+    pub cursor_pos: Position,
 
     pub player: Player,
     pub objects: Vec<Object>,
@@ -77,6 +78,15 @@ pub struct Drawing {
     pub points_smoothed: Vec<Position>,
 }
 
+impl Drawing {
+    pub fn length(&self) -> Coord {
+        self.points_raw
+            .windows(2)
+            .map(|segment| (segment[1].position - segment[0].position).len())
+            .fold(Coord::ZERO, Coord::add)
+    }
+}
+
 #[derive(Debug, Clone)]
 pub struct DrawPoint {
     pub position: Position,
@@ -104,6 +114,7 @@ impl Model {
             },
             real_time: Time::ZERO,
             game_time: Time::ZERO,
+            cursor_pos: vec2::ZERO,
 
             player: Player {
                 health: Health::new_max(config.player.health),
