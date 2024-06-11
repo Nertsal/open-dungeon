@@ -95,7 +95,7 @@ impl Collider {
             let normal = contact.normal1.into_inner();
             let point = contact.point1;
             Collision {
-                point: vec2(point.x, point.y).as_r32(),
+                point: self.position + vec2(point.x, point.y).as_r32(),
                 normal: vec2(normal.x, normal.y).as_r32(),
                 penetration: Coord::new(-contact.dist),
             }

@@ -13,6 +13,7 @@ pub struct SpawnParticles {
 #[derive(Debug, Clone, Copy)]
 pub enum ParticleKind {
     Draw,
+    Bounce,
     Damage,
 }
 

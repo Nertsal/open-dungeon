@@ -19,6 +19,40 @@ impl Model {
         for object in &self.objects {
             if let Some(collision) = player.body.collider.collide(&object.collider) {
                 player.body.collider.position -= collision.normal * collision.penetration;
+                player.body.velocity -=
+                    collision.normal * vec2::dot(player.body.velocity, collision.normal);
+            }
+        }
+
+        // Player - Enemy collisions
+        let player = &mut self.player;
+        for enemy in &mut self.enemies {
+            if let Some(collision) = player.body.collider.collide(&enemy.body.collider) {
+                let correction = collision.normal * collision.penetration;
+
+                let player_t = r32(0.5);
+                let enemy_t = R32::ONE - player_t;
+
+                let bounciness = r32(2.0);
+                let rel_vel = player.body.velocity - enemy.body.velocity;
+                let bounce = collision.normal
+                    * vec2::dot(rel_vel, collision.normal)
+                    * (R32::ONE + bounciness);
+
+                player.body.collider.position -= correction * player_t;
+                player.body.velocity -= bounce * player_t;
+
+                enemy.body.collider.position += correction * enemy_t;
+                enemy.body.velocity += bounce * enemy_t;
+
+                self.particles_queue.push(SpawnParticles {
+                    kind: ParticleKind::Bounce,
+                    distribution: ParticleDistribution::Circle {
+                        center: collision.point,
+                        radius: r32(0.2),
+                    },
+                    ..default()
+                });
             }
         }
     }
@@ -37,7 +71,10 @@ impl Model {
     pub fn ai(&mut self, delta_time: Time) {
         for enemy in &mut self.enemies {
             match &enemy.ai {
-                EnemyAI::Idle => {}
+                EnemyAI::Idle => {
+                    let drag = r32(0.9);
+                    enemy.body.velocity *= drag;
+                }
                 EnemyAI::Crawler => {
                     let target = self.player.body.collider.position;
                     let target_velocity = (target - enemy.body.collider.position)
@@ -45,10 +82,11 @@ impl Model {
                         * enemy.stats.speed;
                     enemy.body.velocity += (target_velocity - enemy.body.velocity)
                         .clamp_len(..=enemy.stats.acceleration * delta_time);
-                    enemy.body.collider.position += enemy.body.velocity * delta_time;
-                    enemy.body.collider.rotation += enemy.body.angular_velocity * delta_time;
                 }
             }
+
+            enemy.body.collider.position += enemy.body.velocity * delta_time;
+            enemy.body.collider.rotation += enemy.body.angular_velocity * delta_time;
         }
     }
 

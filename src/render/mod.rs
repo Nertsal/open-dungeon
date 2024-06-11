@@ -64,6 +64,7 @@ impl GameRender {
             let transform = mat3::scale_uniform(t);
             let mut color = match particle.kind {
                 ParticleKind::Draw => Rgba::WHITE,
+                ParticleKind::Bounce => Rgba::GREEN,
                 ParticleKind::Damage => Rgba::RED,
             };
             color.a = t;
