@@ -88,7 +88,12 @@ impl geng::State for GameState {
 
     fn draw(&mut self, framebuffer: &mut geng::prelude::ugli::Framebuffer) {
         self.framebuffer_size = framebuffer.size();
-        ugli::clear(framebuffer, Some(Rgba::BLACK), None, None);
+        ugli::clear(
+            framebuffer,
+            Some(self.assets.palette.background),
+            None,
+            None,
+        );
 
         self.render.draw_game(&self.model, framebuffer);
     }

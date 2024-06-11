@@ -4,6 +4,21 @@ use crate::prelude::*;
 pub struct Assets {
     pub controls: Controls,
     pub config: Config,
+    pub palette: Palette,
+}
+
+#[derive(geng::asset::Load, Debug, Clone, Serialize, Deserialize)]
+#[load(serde = "ron")]
+pub struct Palette {
+    pub background: Rgba<f32>,
+    pub player: Rgba<f32>,
+    pub object: Rgba<f32>,
+    pub enemy: Rgba<f32>,
+    pub health: Rgba<f32>,
+    pub drawing: Rgba<f32>,
+    pub dash: Rgba<f32>,
+    pub damage: Rgba<f32>,
+    pub collision: Rgba<f32>,
 }
 
 #[derive(geng::asset::Load, Debug, Clone, Serialize, Deserialize)]

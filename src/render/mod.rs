@@ -22,7 +22,7 @@ impl GameRender {
                 .map(|pos| pos.as_f32())
                 .collect();
             let chain = Chain::new(points);
-            let chain = draw2d::Chain::new(chain, 0.1, Rgba::WHITE, 3);
+            let chain = draw2d::Chain::new(chain, 0.1, self.assets.palette.drawing, 3);
             self.geng
                 .draw2d()
                 .draw2d(framebuffer, &model.camera, &chain);
@@ -30,12 +30,22 @@ impl GameRender {
 
         // Objects
         for object in &model.objects {
-            self.draw_collider(&object.collider, Rgba::RED, &model.camera, framebuffer);
+            self.draw_collider(
+                &object.collider,
+                self.assets.palette.object,
+                &model.camera,
+                framebuffer,
+            );
         }
 
         // Enemies
         for enemy in &model.enemies {
-            self.draw_collider(&enemy.body.collider, Rgba::CYAN, &model.camera, framebuffer);
+            self.draw_collider(
+                &enemy.body.collider,
+                self.assets.palette.enemy,
+                &model.camera,
+                framebuffer,
+            );
             self.draw_health_bar(
                 &enemy.body.collider,
                 &enemy.health,
@@ -47,7 +57,7 @@ impl GameRender {
         // Player
         self.draw_collider(
             &model.player.body.collider,
-            Rgba::GREEN,
+            self.assets.palette.player,
             &model.camera,
             framebuffer,
         );
@@ -63,9 +73,9 @@ impl GameRender {
             let t = crate::util::smoothstep(particle.lifetime.get_ratio()).as_f32();
             let transform = mat3::scale_uniform(t);
             let mut color = match particle.kind {
-                ParticleKind::Draw => Rgba::WHITE,
-                ParticleKind::Bounce => Rgba::GREEN,
-                ParticleKind::Damage => Rgba::RED,
+                ParticleKind::Draw => self.assets.palette.dash,
+                ParticleKind::Bounce => self.assets.palette.collision,
+                ParticleKind::Damage => self.assets.palette.damage,
             };
             color.a = t;
             self.draw_collider_transformed(
@@ -83,9 +93,12 @@ impl GameRender {
             if ratio < 1.0 {
                 let draw = Aabb2::point(vec2(0.0, 8.0)).extend_symmetric(vec2(3.0, 0.3) / 2.0);
                 let draw = draw.extend_symmetric(vec2(draw.width() * (-ratio), 0.0) / 2.0);
-                self.geng
-                    .draw2d()
-                    .quad(framebuffer, &model.camera, draw, Rgba::WHITE);
+                self.geng.draw2d().quad(
+                    framebuffer,
+                    &model.camera,
+                    draw,
+                    self.assets.palette.drawing,
+                );
             }
         }
     }
@@ -148,12 +161,15 @@ impl GameRender {
         // Outline
         self.geng
             .draw2d()
-            .quad(framebuffer, camera, health_bar, Rgba::RED);
+            .quad(framebuffer, camera, health_bar, self.assets.palette.health);
         let health_bar = health_bar.extend_uniform(-0.02);
         // Background
-        self.geng
-            .draw2d()
-            .quad(framebuffer, camera, health_bar, Rgba::BLACK);
+        self.geng.draw2d().quad(
+            framebuffer,
+            camera,
+            health_bar,
+            self.assets.palette.background,
+        );
         // Fill
         let fill = health_bar.extend_symmetric(
             vec2(
@@ -163,6 +179,6 @@ impl GameRender {
         );
         self.geng
             .draw2d()
-            .quad(framebuffer, camera, fill, Rgba::RED);
+            .quad(framebuffer, camera, fill, self.assets.palette.health);
     }
 }

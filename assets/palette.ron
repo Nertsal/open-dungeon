@@ -1,0 +1,11 @@
+Palette(
+    background: "#080826",
+    player: "#76bd5e",
+    object: "#234a57",
+    enemy: "#b35f47",
+    health: "#4d0f32",
+    drawing: "#e3de88",
+    dash: "#5c9974",
+    damage: "#4d0f32",
+    collision: "#5c9974",
+)
