@@ -7,9 +7,10 @@ impl Model {
         // Movement
         let move_dir = input.move_dir.clamp_len(..=Coord::ONE);
         let target_velocity = move_dir * player.stats.speed;
-        player.velocity += (target_velocity - player.velocity)
+        player.body.velocity += (target_velocity - player.body.velocity)
             .clamp_len(..=player.stats.acceleration * delta_time);
-        player.collider.position += player.velocity * delta_time;
+        player.body.collider.position += player.body.velocity * delta_time;
+        player.body.collider.rotation += player.body.angular_velocity * delta_time;
 
         match input.drawing {
             Some(position) => {
@@ -65,8 +66,9 @@ impl Model {
             .get(drawing.points_smoothed.len() - 2)
             .unwrap();
 
-        self.player.collider.position = last;
-        self.player.velocity = (last - prelast).normalize_or_zero() * self.config.player.dash.speed;
+        self.player.body.collider.position = last;
+        self.player.body.velocity =
+            (last - prelast).normalize_or_zero() * self.config.player.dash.speed;
 
         self.damage_around(
             drawing,

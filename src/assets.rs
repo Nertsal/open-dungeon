@@ -32,6 +32,13 @@ pub struct PlayerConfig {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct EnemyConfig {
+    pub health: Hp,
+    pub speed: Coord,
+    pub acceleration: Coord,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct DashConfig {
     pub speed: Coord,
     pub width: Coord,

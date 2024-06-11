@@ -1,8 +1,8 @@
 Config(
     player: PlayerConfig(
         health: 50.0,
-        speed: 5.0,
-        acceleration: 20.0,
+        speed: 7.0,
+        acceleration: 50.0,
         dash: DashConfig(
             speed: 10.0,
             width: 0.5,

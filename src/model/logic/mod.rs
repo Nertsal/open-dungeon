@@ -8,6 +8,7 @@ impl Model {
         self.game_time += delta_time;
 
         self.controls(input, delta_time);
+        self.ai(delta_time);
         self.collisions(delta_time);
         self.check_deaths(delta_time);
     }
@@ -16,8 +17,8 @@ impl Model {
         // Player - Object collisions
         let player = &mut self.player;
         for object in &self.objects {
-            if let Some(collision) = player.collider.collide(&object.collider) {
-                player.collider.position -= collision.normal * collision.penetration;
+            if let Some(collision) = player.body.collider.collide(&object.collider) {
+                player.body.collider.position -= collision.normal * collision.penetration;
             }
         }
     }
@@ -33,9 +34,28 @@ impl Model {
         self.particles.extend(spawn);
     }
 
+    pub fn ai(&mut self, delta_time: Time) {
+        for enemy in &mut self.enemies {
+            match &enemy.ai {
+                EnemyAI::Idle => {}
+                EnemyAI::Crawler => {
+                    let target = self.player.body.collider.position;
+                    let target_velocity = (target - enemy.body.collider.position)
+                        .normalize_or_zero()
+                        * enemy.stats.speed;
+                    enemy.body.velocity += (target_velocity - enemy.body.velocity)
+                        .clamp_len(..=enemy.stats.acceleration * delta_time);
+                    enemy.body.collider.position += enemy.body.velocity * delta_time;
+                    enemy.body.collider.rotation += enemy.body.angular_velocity * delta_time;
+                }
+            }
+        }
+    }
+
     pub fn damage_around(&mut self, drawing: Drawing, width: Coord, base_damage: Hp) {
         for enemy in &mut self.enemies {
-            let Some(delta) = delta_to_chain(enemy.collider.position, &drawing.points_smoothed)
+            let Some(delta) =
+                delta_to_chain(enemy.body.collider.position, &drawing.points_smoothed)
             else {
                 continue;
             };
@@ -44,11 +64,11 @@ impl Model {
             if delta.len() < width {
                 enemy.health.change(-base_damage); // TODO: combo scaling
 
-                let size = enemy.collider.compute_aabb().size();
+                let size = enemy.body.collider.compute_aabb().size();
                 self.particles_queue.push(SpawnParticles {
                     kind: ParticleKind::Damage,
                     distribution: ParticleDistribution::Circle {
-                        center: enemy.collider.position,
+                        center: enemy.body.collider.position,
                         radius: size.len() / r32(2.0),
                     },
                     ..default()

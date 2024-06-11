@@ -35,16 +35,40 @@ pub struct Object {
 }
 
 #[derive(Debug, Clone)]
+pub struct PhysicsBody {
+    pub collider: Collider,
+    pub velocity: vec2<Coord>,
+    pub angular_velocity: Angle<R32>,
+}
+
+impl PhysicsBody {
+    pub fn new(position: Position, shape: Shape) -> Self {
+        Self {
+            collider: Collider::new(position, shape),
+            velocity: vec2::ZERO,
+            angular_velocity: Angle::ZERO,
+        }
+    }
+}
+
+#[derive(Debug, Clone)]
 pub struct Enemy {
     pub health: Health,
-    pub collider: Collider,
+    pub body: PhysicsBody,
+    pub stats: EnemyConfig,
+    pub ai: EnemyAI,
+}
+
+#[derive(Debug, Clone)]
+pub enum EnemyAI {
+    Idle,
+    Crawler,
 }
 
 #[derive(Debug, Clone)]
 pub struct Player {
     pub health: Health,
-    pub collider: Collider,
-    pub velocity: vec2<Coord>,
+    pub body: PhysicsBody,
     pub stats: PlayerConfig,
     pub draw_action: Option<Drawing>,
 }
@@ -69,6 +93,11 @@ pub struct PlayerControls {
 
 impl Model {
     pub fn new(config: Config) -> Self {
+        let enemy_stats = EnemyConfig {
+            health: r32(10.0),
+            speed: r32(3.0),
+            acceleration: r32(10.0),
+        };
         Self {
             camera: Camera {
                 center: vec2::ZERO,
@@ -80,8 +109,7 @@ impl Model {
 
             player: Player {
                 health: Health::new_max(config.player.health),
-                collider: Collider::new(vec2::ZERO, Shape::circle(0.5)),
-                velocity: vec2::ZERO,
+                body: PhysicsBody::new(vec2::ZERO, Shape::circle(0.5)),
                 stats: config.player.clone(),
                 draw_action: None,
             },
@@ -90,12 +118,16 @@ impl Model {
             }],
             enemies: vec![
                 Enemy {
-                    health: Health::new_max(r32(10.0)),
-                    collider: Collider::new(vec2(5.0, -3.0).as_r32(), Shape::square(0.4)),
+                    health: Health::new_max(enemy_stats.health),
+                    body: PhysicsBody::new(vec2(5.0, -3.0).as_r32(), Shape::square(0.4)),
+                    stats: enemy_stats.clone(),
+                    ai: EnemyAI::Idle,
                 },
                 Enemy {
-                    health: Health::new_max(r32(20.0)),
-                    collider: Collider::new(vec2(3.0, -2.0).as_r32(), Shape::circle(0.4)),
+                    health: Health::new_max(enemy_stats.health),
+                    body: PhysicsBody::new(vec2(3.0, -2.0).as_r32(), Shape::circle(0.4)),
+                    stats: enemy_stats.clone(),
+                    ai: EnemyAI::Crawler,
                 },
             ],
             particles: Arena::new(),

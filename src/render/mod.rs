@@ -35,19 +35,24 @@ impl GameRender {
 
         // Enemies
         for enemy in &model.enemies {
-            self.draw_collider(&enemy.collider, Rgba::CYAN, &model.camera, framebuffer);
-            self.draw_health_bar(&enemy.collider, &enemy.health, &model.camera, framebuffer);
+            self.draw_collider(&enemy.body.collider, Rgba::CYAN, &model.camera, framebuffer);
+            self.draw_health_bar(
+                &enemy.body.collider,
+                &enemy.health,
+                &model.camera,
+                framebuffer,
+            );
         }
 
         // Player
         self.draw_collider(
-            &model.player.collider,
+            &model.player.body.collider,
             Rgba::GREEN,
             &model.camera,
             framebuffer,
         );
         self.draw_health_bar(
-            &model.player.collider,
+            &model.player.body.collider,
             &model.player.health,
             &model.camera,
             framebuffer,
