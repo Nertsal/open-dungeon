@@ -90,7 +90,7 @@ impl Model {
                     collider: Collider::new(vec2(5.0, -3.0).as_r32(), Shape::square(0.4)),
                 },
                 Enemy {
-                    health: Health::new_max(r32(10.0)),
+                    health: Health::new_max(r32(20.0)),
                     collider: Collider::new(vec2(3.0, -2.0).as_r32(), Shape::circle(0.4)),
                 },
             ],

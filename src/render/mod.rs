@@ -36,12 +36,19 @@ impl GameRender {
         // Enemies
         for enemy in &model.enemies {
             self.draw_collider(&enemy.collider, Rgba::CYAN, &model.camera, framebuffer);
+            self.draw_health_bar(&enemy.collider, &enemy.health, &model.camera, framebuffer);
         }
 
         // Player
         self.draw_collider(
             &model.player.collider,
             Rgba::GREEN,
+            &model.camera,
+            framebuffer,
+        );
+        self.draw_health_bar(
+            &model.player.collider,
+            &model.player.health,
             &model.camera,
             framebuffer,
         );
@@ -74,5 +81,41 @@ impl GameRender {
                 );
             }
         }
+    }
+
+    pub fn draw_health_bar(
+        &self,
+        collider: &Collider,
+        health: &Health,
+        camera: &Camera,
+        framebuffer: &mut ugli::Framebuffer,
+    ) {
+        if health.is_max() {
+            return;
+        }
+
+        let aabb = collider.compute_aabb().map(Coord::as_f32);
+        let health_bar = Aabb2::point(vec2(aabb.center().x, aabb.max.y + 0.2))
+            .extend_symmetric(vec2(0.9, 0.2) / 2.0);
+
+        // Outline
+        self.geng
+            .draw2d()
+            .quad(framebuffer, camera, health_bar, Rgba::RED);
+        let health_bar = health_bar.extend_uniform(-0.02);
+        // Background
+        self.geng
+            .draw2d()
+            .quad(framebuffer, camera, health_bar, Rgba::BLACK);
+        // Fill
+        let fill = health_bar.extend_symmetric(
+            vec2(
+                health_bar.width() * (health.get_ratio().as_f32() - 1.0),
+                0.0,
+            ) / 2.0,
+        );
+        self.geng
+            .draw2d()
+            .quad(framebuffer, camera, fill, Rgba::RED);
     }
 }

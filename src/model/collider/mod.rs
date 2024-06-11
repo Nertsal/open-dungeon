@@ -32,8 +32,6 @@ impl Collider {
         mat3::translate(self.position) * mat3::rotate(self.rotation)
     }
 
-    /// NOTE: Use with caution, as it does not normalize distance to other entities.
-    /// So it should not be used in raw form for collisions or rendering.
     pub fn compute_aabb(&self) -> Aabb2<Coord> {
         let (iso, shape) = self.to_parry();
         let parry2d::bounding_volume::Aabb { mins, maxs } = shape.compute_aabb(&iso);
@@ -49,8 +47,6 @@ impl Collider {
         parry2d::math::Isometry::new(parry2d::na::Vector2::new(x, y), angle)
     }
 
-    /// NOTE: Use with caution, as it does not normalize distance to other entities.
-    /// So it should not be used in raw form for collisions or rendering.
     fn to_parry(&self) -> (parry2d::math::Isometry<f32>, Box<dyn parry2d::shape::Shape>) {
         (self.get_iso(), self.shape.to_parry())
     }

@@ -32,6 +32,7 @@ impl Model {
             else {
                 continue;
             };
+
             // TODO: maybe account for collider shape or size
             if delta.len() < width {
                 enemy.health.change(-base_damage); // TODO: combo scaling
