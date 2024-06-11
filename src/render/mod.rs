@@ -57,7 +57,10 @@ impl GameRender {
         for (_, particle) in &model.particles {
             let t = crate::util::smoothstep(particle.lifetime.get_ratio()).as_f32();
             let transform = mat3::scale_uniform(t);
-            let mut color = Rgba::WHITE;
+            let mut color = match particle.kind {
+                ParticleKind::Draw => Rgba::WHITE,
+                ParticleKind::Damage => Rgba::RED,
+            };
             color.a = t;
             self.draw_collider_transformed(
                 transform,

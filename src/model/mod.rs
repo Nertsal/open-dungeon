@@ -24,15 +24,24 @@ pub struct Model {
     pub objects: Vec<Object>,
     pub enemies: Vec<Enemy>,
     pub particles: Arena<Particle>,
+
+    pub particles_queue: Vec<SpawnParticles>,
 }
 
 #[derive(Debug, Clone)]
 pub struct SpawnParticles {
+    pub kind: ParticleKind,
     pub density: R32,
     pub distribution: ParticleDistribution,
     pub size: RangeInclusive<Coord>,
     pub velocity: vec2<Coord>,
     pub lifetime: RangeInclusive<Time>,
+}
+
+#[derive(Debug, Clone, Copy)]
+pub enum ParticleKind {
+    Draw,
+    Damage,
 }
 
 #[derive(Debug, Clone)]
@@ -72,6 +81,7 @@ impl ParticleDistribution {
 impl Default for SpawnParticles {
     fn default() -> Self {
         Self {
+            kind: ParticleKind::Draw,
             density: r32(5.0),
             distribution: ParticleDistribution::Circle {
                 center: vec2::ZERO,
@@ -86,10 +96,10 @@ impl Default for SpawnParticles {
 
 #[derive(Debug, Clone)]
 pub struct Particle {
+    pub kind: ParticleKind,
     pub collider: Collider,
     pub velocity: vec2<Coord>,
     pub lifetime: Bounded<Time>,
-    // pub kind: ParticleKind,
 }
 
 #[derive(Debug, Clone)]
@@ -162,6 +172,8 @@ impl Model {
                 },
             ],
             particles: Arena::new(),
+
+            particles_queue: Vec::new(),
 
             config,
         }
