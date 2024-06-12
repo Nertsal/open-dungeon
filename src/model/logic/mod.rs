@@ -17,7 +17,9 @@ impl Model {
     }
 
     pub fn update_camera(&mut self, delta_time: Time) {
-        if self.rooms.contains(Index::from_raw_parts(0, 0)) && self.rooms.len() == 1 {
+        if self.rooms.contains(Index::from_raw_parts(0, 0)) && self.rooms.len() == 1
+            || self.player.draw_action.is_some()
+        {
             return;
         }
 
@@ -43,7 +45,11 @@ impl Model {
             if let Some(collision) = player.body.collider.collide(&enemy.body.collider) {
                 let correction = collision.normal * collision.penetration;
 
-                let player_t = r32(0.5);
+                let player_t = if player.draw_action.is_some() {
+                    r32(0.0)
+                } else {
+                    r32(0.5)
+                };
                 let enemy_t = R32::ONE - player_t;
 
                 let bounciness = r32(2.0);
