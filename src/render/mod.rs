@@ -101,7 +101,9 @@ impl GameRender {
         if let Some(drawing) = &model.player.draw_action {
             let ratio = (drawing.length() / model.player.stats.dash.max_distance).as_f32();
             if ratio < 1.0 {
-                let draw = Aabb2::point(vec2(0.0, 8.0)).extend_symmetric(vec2(3.0, 0.3) / 2.0);
+                let draw =
+                    Aabb2::point(model.camera.center + vec2(0.0, model.camera.fov * 0.9 / 2.0))
+                        .extend_symmetric(vec2(3.0, 0.3) / 2.0);
                 let draw = draw.extend_symmetric(vec2(draw.width() * (-ratio), 0.0) / 2.0);
                 self.geng.draw2d().quad(
                     framebuffer,
