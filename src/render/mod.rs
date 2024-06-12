@@ -14,6 +14,26 @@ impl GameRender {
     }
 
     pub fn draw_game(&mut self, model: &Model, framebuffer: &mut ugli::Framebuffer) {
+        // Rooms
+        for (_, room) in &model.rooms {
+            self.geng.draw2d().quad(
+                framebuffer,
+                &model.camera,
+                room.area.map(Coord::as_f32),
+                self.assets.palette.room,
+            );
+        }
+
+        // Objects
+        for object in &model.objects {
+            self.draw_collider(
+                &object.collider,
+                self.assets.palette.object,
+                &model.camera,
+                framebuffer,
+            );
+        }
+
         if let Some(drawing) = &model.player.draw_action {
             // Drawing
             let points = drawing
@@ -26,16 +46,6 @@ impl GameRender {
             self.geng
                 .draw2d()
                 .draw2d(framebuffer, &model.camera, &chain);
-        }
-
-        // Objects
-        for object in &model.objects {
-            self.draw_collider(
-                &object.collider,
-                self.assets.palette.object,
-                &model.camera,
-                framebuffer,
-            );
         }
 
         // Enemies

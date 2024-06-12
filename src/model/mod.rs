@@ -21,11 +21,20 @@ pub struct Model {
     pub cursor_pos: Position,
 
     pub player: Player,
+    pub rooms: Arena<Room>,
+    pub room_colliders: Vec<Collider>,
     pub objects: Vec<Object>,
     pub enemies: Vec<Enemy>,
     pub particles: Arena<Particle>,
 
     pub particles_queue: Vec<SpawnParticles>,
+}
+
+#[derive(Debug, Clone)]
+pub struct Room {
+    pub area: Aabb2<Coord>,
+    /// Index of the room the player unlocked this room from.
+    pub unlocked_after: Option<Index>,
 }
 
 #[derive(Debug, Clone)]
@@ -101,12 +110,13 @@ pub struct PlayerControls {
 
 impl Model {
     pub fn new(config: Config) -> Self {
-        let enemy_stats = EnemyConfig {
-            health: r32(10.0),
-            speed: r32(3.0),
-            acceleration: r32(10.0),
-        };
-        Self {
+        let mut rooms = Arena::new();
+        rooms.insert(Room {
+            area: Aabb2::ZERO.extend_symmetric(config.starting_area / r32(2.0)),
+            unlocked_after: None,
+        });
+
+        let mut model = Self {
             camera: Camera {
                 center: vec2::ZERO,
                 rotation: Angle::ZERO,
@@ -122,28 +132,17 @@ impl Model {
                 stats: config.player.clone(),
                 draw_action: None,
             },
-            objects: vec![Object {
-                collider: Collider::new(vec2(3.0, 2.0).as_r32(), Shape::circle(0.6)),
-            }],
-            enemies: vec![
-                Enemy {
-                    health: Health::new_max(enemy_stats.health),
-                    body: PhysicsBody::new(vec2(5.0, -3.0).as_r32(), Shape::square(0.4)),
-                    stats: enemy_stats.clone(),
-                    ai: EnemyAI::Idle,
-                },
-                Enemy {
-                    health: Health::new_max(enemy_stats.health),
-                    body: PhysicsBody::new(vec2(3.0, -2.0).as_r32(), Shape::circle(0.4)),
-                    stats: enemy_stats.clone(),
-                    ai: EnemyAI::Crawler,
-                },
-            ],
+            rooms,
+            room_colliders: Vec::new(),
+            objects: vec![],
+            enemies: vec![],
             particles: Arena::new(),
 
             particles_queue: Vec::new(),
 
             config,
-        }
+        };
+        model.update_room_colliders();
+        model
     }
 }

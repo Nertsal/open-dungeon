@@ -11,6 +11,7 @@ pub struct Assets {
 #[load(serde = "ron")]
 pub struct Palette {
     pub background: Rgba<f32>,
+    pub room: Rgba<f32>,
     pub player: Rgba<f32>,
     pub object: Rgba<f32>,
     pub enemy: Rgba<f32>,
@@ -35,6 +36,7 @@ pub struct Controls {
 #[derive(geng::asset::Load, Debug, Clone, Serialize, Deserialize)]
 #[load(serde = "ron")]
 pub struct Config {
+    pub starting_area: vec2<Coord>,
     pub player: PlayerConfig,
 }
 

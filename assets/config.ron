@@ -1,4 +1,5 @@
 Config(
+    starting_area: (7.0, 7.0),
     player: PlayerConfig(
         health: 50.0,
         speed: 7.0,

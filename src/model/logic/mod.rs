@@ -1,5 +1,7 @@
 mod controls;
 
+use std::collections::BTreeMap;
+
 use super::*;
 
 impl Model {
@@ -53,6 +55,28 @@ impl Model {
                     },
                     ..default()
                 });
+            }
+        }
+
+        // Room collisions
+        let player = &mut self.player;
+        for room in &self.room_colliders {
+            if let Some(collision) = player.body.collider.collide(room) {
+                let bounciness = r32(0.8);
+                player.body.collider.position -= collision.normal * collision.penetration;
+                player.body.velocity -= collision.normal
+                    * vec2::dot(player.body.velocity, collision.normal)
+                    * (Coord::ONE + bounciness);
+            }
+
+            for enemy in &mut self.enemies {
+                if let Some(collision) = enemy.body.collider.collide(room) {
+                    let bounciness = r32(0.8);
+                    enemy.body.collider.position -= collision.normal * collision.penetration;
+                    enemy.body.velocity -= collision.normal
+                        * vec2::dot(enemy.body.velocity, collision.normal)
+                        * (Coord::ONE + bounciness);
+                }
             }
         }
     }
@@ -121,6 +145,131 @@ impl Model {
             },
             ..default()
         })
+    }
+
+    pub fn update_room_colliders(&mut self) {
+        struct Sides {
+            room: Aabb2<Coord>,
+            left: Vec<(Coord, Coord)>,
+            right: Vec<(Coord, Coord)>,
+            bottom: Vec<(Coord, Coord)>,
+            top: Vec<(Coord, Coord)>,
+        }
+
+        fn open(side: &mut Vec<(Coord, Coord)>, segment: (Coord, Coord)) {
+            for (i, (a, b)) in side.iter_mut().enumerate() {
+                let in0 = (*a..=*b).contains(&segment.0);
+                let in1 = (*a..=*b).contains(&segment.1);
+                if in0 {
+                    if in1 {
+                        let end = *b;
+                        *b = segment.0;
+                        side.insert(i + 1, (segment.1, end));
+                        break;
+                    } else {
+                        *b = segment.0;
+                    }
+                } else if in1 {
+                    *a = segment.1;
+                }
+            }
+            side.retain(|(a, b)| b > a);
+        }
+
+        let mut all_sides: BTreeMap<Index, Sides> = self
+            .rooms
+            .iter()
+            .map(|(idx, room)| {
+                (
+                    idx,
+                    Sides {
+                        room: room.area,
+                        left: vec![(room.area.min.y, room.area.max.y)],
+                        right: vec![(room.area.min.y, room.area.max.y)],
+                        bottom: vec![(room.area.min.x, room.area.max.x)],
+                        top: vec![(room.area.min.x, room.area.max.x)],
+                    },
+                )
+            })
+            .collect();
+
+        for (idx, room) in &self.rooms {
+            if let Some(prev_idx) = room.unlocked_after {
+                if let Some(prev_room) = self.rooms.get(prev_idx) {
+                    let room = room.area;
+                    let prev = prev_room.area;
+                    let sides = all_sides.get_mut(&prev_idx).unwrap();
+                    if prev.max.x == room.min.x {
+                        // Right side
+                        let intersection = (room.min.y.max(prev.min.y), room.max.y.min(prev.max.y));
+                        open(&mut sides.right, intersection);
+                        open(&mut all_sides.get_mut(&idx).unwrap().left, intersection);
+                    } else if prev.min.x == room.max.x {
+                        // Left side
+                        let intersection = (room.min.y.max(prev.min.y), room.max.y.min(prev.max.y));
+                        open(&mut sides.left, intersection);
+                        open(&mut all_sides.get_mut(&idx).unwrap().right, intersection);
+                    } else if prev.max.y == room.min.y {
+                        // Top side
+                        let intersection = (room.min.x.max(prev.min.x), room.max.x.min(prev.max.x));
+                        open(&mut sides.top, intersection);
+                        open(&mut all_sides.get_mut(&idx).unwrap().bottom, intersection);
+                    } else if prev.min.y == room.max.y {
+                        // Bottom side
+                        let intersection = (room.min.x.max(prev.min.x), room.max.x.min(prev.max.x));
+                        open(&mut sides.bottom, intersection);
+                        open(&mut all_sides.get_mut(&idx).unwrap().top, intersection);
+                    } else {
+                        unreachable!("invalid room setup")
+                    }
+                }
+            }
+        }
+
+        let width = r32(0.1);
+        let wall_vert = |x, (y_min, y_max)| {
+            Collider::aabb(
+                Aabb2::point(vec2(x, y_min))
+                    .extend_up(y_max - y_min)
+                    .extend_symmetric(vec2(width, Coord::ZERO) / r32(2.0)),
+            )
+        };
+        let wall_horiz = |y, (x_min, x_max)| {
+            Collider::aabb(
+                Aabb2::point(vec2(x_min, y))
+                    .extend_right(x_max - x_min)
+                    .extend_symmetric(vec2(Coord::ZERO, width) / r32(2.0)),
+            )
+        };
+
+        let colliders = all_sides
+            .into_values()
+            .flat_map(|sides| {
+                sides
+                    .left
+                    .into_iter()
+                    .map(move |segment| wall_vert(sides.room.min.x, segment))
+                    .chain(
+                        sides
+                            .right
+                            .into_iter()
+                            .map(move |segment| wall_vert(sides.room.max.x, segment)),
+                    )
+                    .chain(
+                        sides
+                            .bottom
+                            .into_iter()
+                            .map(move |segment| wall_horiz(sides.room.min.y, segment)),
+                    )
+                    .chain(
+                        sides
+                            .top
+                            .into_iter()
+                            .map(move |segment| wall_horiz(sides.room.max.y, segment)),
+                    )
+            })
+            .collect();
+        self.room_colliders = colliders;
     }
 }
 

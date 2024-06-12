@@ -28,6 +28,10 @@ impl Collider {
         }
     }
 
+    pub fn aabb(aabb: Aabb2<Coord>) -> Self {
+        Self::new(aabb.center(), Shape::rectangle(aabb.width(), aabb.height()))
+    }
+
     pub fn transform_mat(&self) -> mat3<Coord> {
         mat3::translate(self.position) * mat3::rotate(self.rotation)
     }
