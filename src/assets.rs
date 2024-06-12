@@ -52,8 +52,17 @@ pub struct Controls {
 #[load(serde = "ron")]
 pub struct Config {
     pub starting_area: vec2<Coord>,
+    pub difficulty: DifficultyConfig,
     pub player: PlayerConfig,
     pub enemies: Vec<EnemyConfig>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct DifficultyConfig {
+    pub initial: R32,
+    pub time_scaling: R32,
+    pub room_bonus: R32,
+    pub room_exponent: R32,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

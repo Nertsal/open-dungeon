@@ -8,6 +8,7 @@ impl Model {
     pub fn update(&mut self, input: PlayerControls, delta_time: Time) {
         self.real_time += delta_time;
         self.game_time += delta_time;
+        self.difficulty += self.config.difficulty.time_scaling * delta_time;
 
         if self.player.draw_action.is_some() {
             self.events.push(Event::Sound(SoundEvent::Drawing));
@@ -214,6 +215,14 @@ impl Model {
             effect: effect.clone(),
         });
         self.upgrades.extend(upgrades);
+
+        self.rooms_cleared += 1;
+        self.difficulty += self.config.difficulty.room_bonus
+            * self
+                .config
+                .difficulty
+                .room_exponent
+                .powf(r32(self.rooms_cleared as f32));
     }
 
     pub fn ai(&mut self, delta_time: Time) {
@@ -477,7 +486,7 @@ impl Model {
         };
 
         let mut rng = thread_rng();
-        let mut difficulty = r32(5.0); // TODO dynamic
+        let mut difficulty = self.difficulty;
         while let Some(config) = self
             .config
             .enemies
@@ -507,7 +516,7 @@ impl Model {
             return;
         }
 
-        let speed = r32(1.5); // TODO: dynamic with difficulty
+        let speed = r32(1.5) * r32(self.rooms.len() as f32).powf(r32(1.2));
         let ids: Vec<_> = self.rooms.iter().map(|(idx, _)| idx).collect();
         for (_, room) in &mut self.rooms {
             let dir = room

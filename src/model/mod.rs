@@ -20,6 +20,8 @@ pub struct Model {
     pub game_time: Time,
     pub cursor_pos: Position,
 
+    pub rooms_cleared: usize,
+    pub difficulty: R32,
     pub player: Player,
     pub rooms: Arena<Room>,
     pub room_colliders: Vec<(Index, Direction, Collider)>,
@@ -222,6 +224,8 @@ impl Model {
             game_time: Time::ZERO,
             cursor_pos: vec2::ZERO,
 
+            rooms_cleared: 0,
+            difficulty: config.difficulty.initial,
             player: Player {
                 health: Health::new_max(config.player.health),
                 body: PhysicsBody::new(vec2::ZERO, config.player.shape),
