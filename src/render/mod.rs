@@ -126,7 +126,9 @@ impl GameRender {
         //         );
         //     }
         // }
+    }
 
+    pub fn draw_ui(&self, model: &Model, framebuffer: &mut ugli::Framebuffer) {
         // Score
         self.geng.default_font().draw(
             framebuffer,

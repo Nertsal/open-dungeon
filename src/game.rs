@@ -6,8 +6,11 @@ pub struct GameState {
 
     framebuffer_size: vec2<usize>,
     cursor: CursorState,
+    game_texture: ugli::Texture,
+
     render: GameRender,
     model: Model,
+
     drawing_sfx: geng::SoundEffect,
     volume: f32,
 }
@@ -29,8 +32,16 @@ impl GameState {
                 screen_pos: vec2::ZERO,
                 world_pos: vec2::ZERO,
             },
+            game_texture: {
+                let mut texture =
+                    geng_utils::texture::new_texture(geng.ugli(), crate::GAME_RESOLUTION);
+                texture.set_filter(ugli::Filter::Nearest);
+                texture
+            },
+
             render: GameRender::new(geng, assets),
             model: Model::new(assets.config.clone()),
+
             drawing_sfx: {
                 let mut sfx = assets.sounds.drawing.play();
                 sfx.set_volume(0.0);
@@ -75,13 +86,17 @@ impl GameState {
 impl geng::State for GameState {
     fn update(&mut self, delta_time: f64) {
         let _delta_time = Time::new(delta_time as f32);
+
+        let game_pos = geng_utils::layout::fit_aabb(
+            self.game_texture.size().as_f32(),
+            Aabb2::ZERO.extend_positive(self.framebuffer_size.as_f32()),
+            vec2(0.5, 0.5),
+        );
+        let pos = self.cursor.screen_pos.as_f32() - game_pos.bottom_left();
         self.cursor.world_pos = self
             .model
             .camera
-            .screen_to_world(
-                self.framebuffer_size.as_f32(),
-                self.cursor.screen_pos.as_f32(),
-            )
+            .screen_to_world(game_pos.size(), pos)
             .as_r32();
         self.model.cursor_pos = self.cursor.world_pos;
     }
@@ -137,6 +152,20 @@ impl geng::State for GameState {
             None,
         );
 
-        self.render.draw_game(&self.model, framebuffer);
+        let mut game_buffer =
+            geng_utils::texture::attach_texture(&mut self.game_texture, self.geng.ugli());
+        ugli::clear(
+            &mut game_buffer,
+            Some(self.assets.palette.background),
+            None,
+            None,
+        );
+        self.render.draw_game(&self.model, &mut game_buffer);
+        let aabb = Aabb2::ZERO.extend_positive(framebuffer.size().as_f32());
+        geng_utils::texture::DrawTexture::new(&self.game_texture)
+            .fit(aabb, vec2(0.5, 0.5))
+            .draw(&geng::PixelPerfectCamera, &self.geng, framebuffer);
+
+        self.render.draw_ui(&self.model, framebuffer);
     }
 }
