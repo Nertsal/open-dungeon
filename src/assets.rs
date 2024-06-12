@@ -66,7 +66,7 @@ pub struct PlayerConfig {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct EnemyConfig {
-    pub cost: R32,
+    pub cost: Option<R32>,
     pub health: Hp,
     pub speed: Coord,
     pub acceleration: Coord,

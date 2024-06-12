@@ -1,3 +1,4 @@
+#![enable(implicit_some)]
 Config(
     starting_area: (7.0, 7.0),
     player: PlayerConfig(
@@ -8,7 +9,7 @@ Config(
             max_distance: 7.0,
             speed: 10.0,
             width: 0.5,
-            damage: 10.0,
+            damage: 5.0,
         ),
         shape: Triangle( height: 0.8 ),
     ),
@@ -22,12 +23,30 @@ Config(
             ai: Crawler,
         ),
         EnemyConfig(
-            cost: 1.0,
-            health: 20.0,
+            cost: 3.0,
+            health: 15.0,
             speed: 2.0,
             acceleration: 5.0,
             shape: Rectangle( width: 0.9, height: 0.9 ),
             ai: Crawler,
+        ),
+        EnemyConfig(
+            cost: 5.0,
+            health: 20.0,
+            speed: 2.0,
+            acceleration: 5.0,
+            shape: Circle( radius: 0.5 ),
+            ai: Shooter (
+                preferred_distance: 3.0,
+                charge: ( value: 0.0, min: 0.0, max: 1.5 ),
+                bullet: EnemyConfig(
+                    health: 5.0,
+                    speed: 3.0,
+                    acceleration: 5.0,
+                    shape: Triangle ( height: 0.6 ),
+                    ai: Crawler,
+                ),
+            ),
         ),
     ],
 )

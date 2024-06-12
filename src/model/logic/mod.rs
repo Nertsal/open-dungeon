@@ -20,10 +20,16 @@ impl Model {
         self.passive_particles(delta_time);
         self.check_deaths(delta_time);
         self.update_camera(delta_time);
+        self.process_spawns(delta_time);
     }
 
     pub fn can_expand(&self) -> bool {
         self.enemies.is_empty()
+    }
+
+    pub fn process_spawns(&mut self, _delta_time: Time) {
+        let spawns = std::mem::take(&mut self.spawn_queue);
+        self.enemies.extend(spawns);
     }
 
     pub fn passive_particles(&mut self, _delta_time: Time) {
@@ -163,13 +169,35 @@ impl Model {
 
     pub fn ai(&mut self, delta_time: Time) {
         for enemy in &mut self.enemies {
-            match &enemy.ai {
+            match &mut enemy.ai {
                 EnemyAI::Idle => {
                     let drag = r32(0.9);
                     enemy.body.velocity *= drag;
                 }
                 EnemyAI::Crawler => {
                     let target = self.player.body.collider.position;
+                    let target_velocity = (target - enemy.body.collider.position)
+                        .normalize_or_zero()
+                        * enemy.stats.speed;
+                    enemy.body.velocity += (target_velocity - enemy.body.velocity)
+                        .clamp_len(..=enemy.stats.acceleration * delta_time);
+                }
+                EnemyAI::Shooter {
+                    preferred_distance,
+                    charge,
+                    bullet,
+                } => {
+                    charge.change(delta_time);
+                    if charge.is_max() {
+                        charge.set_ratio(Time::ZERO);
+                        self.spawn_queue
+                            .push(Enemy::new((**bullet).clone(), enemy.body.collider.position));
+                    }
+
+                    let target = enemy.body.collider.position
+                        + (enemy.body.collider.position - self.player.body.collider.position)
+                            .normalize_or_zero()
+                            * *preferred_distance;
                     let target_velocity = (target - enemy.body.collider.position)
                         .normalize_or_zero()
                         * enemy.stats.speed;
@@ -388,7 +416,7 @@ impl Model {
             .config
             .enemies
             .iter()
-            .filter(|config| config.cost <= difficulty)
+            .filter(|config| config.cost.map_or(false, |cost| cost <= difficulty))
             .choose(&mut rng)
         {
             for _ in 0..50 {
@@ -400,13 +428,8 @@ impl Model {
                     continue;
                 }
 
-                difficulty -= config.cost;
-                self.enemies.push(Enemy {
-                    health: Bounded::new_max(config.health),
-                    body: PhysicsBody::new(position, config.shape),
-                    ai: config.ai.clone(),
-                    stats: config.clone(),
-                });
+                difficulty -= config.cost.unwrap_or(R32::ZERO);
+                self.enemies.push(Enemy::new(config.clone(), position));
                 break;
             }
         }
@@ -418,7 +441,7 @@ impl Model {
             return;
         }
 
-        let speed = r32(3.0); // TODO: dynamic with difficulty
+        let speed = r32(1.5); // TODO: dynamic with difficulty
         let ids: Vec<_> = self.rooms.iter().map(|(idx, _)| idx).collect();
         for (_, room) in &mut self.rooms {
             let dir = room

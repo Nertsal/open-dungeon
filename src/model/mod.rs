@@ -28,6 +28,7 @@ pub struct Model {
     pub particles: Arena<Particle>,
 
     pub particles_queue: Vec<SpawnParticles>,
+    pub spawn_queue: Vec<Enemy>,
     pub events: Vec<Event>,
 }
 
@@ -131,10 +132,26 @@ pub struct Enemy {
     pub ai: EnemyAI,
 }
 
+impl Enemy {
+    pub fn new(config: EnemyConfig, position: Position) -> Self {
+        Self {
+            health: Bounded::new_max(config.health),
+            body: PhysicsBody::new(position, config.shape),
+            ai: config.ai.clone(),
+            stats: config,
+        }
+    }
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum EnemyAI {
     Idle,
     Crawler,
+    Shooter {
+        preferred_distance: Coord,
+        charge: Bounded<Time>,
+        bullet: Box<EnemyConfig>,
+    },
 }
 
 #[derive(Debug, Clone)]
@@ -204,6 +221,7 @@ impl Model {
             particles: Arena::new(),
 
             particles_queue: Vec::new(),
+            spawn_queue: Vec::new(),
             events: Vec::new(),
 
             config,
