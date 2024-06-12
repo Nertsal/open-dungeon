@@ -16,6 +16,10 @@ impl Model {
         self.update_camera(delta_time);
     }
 
+    pub fn can_expand(&self) -> bool {
+        self.enemies.is_empty()
+    }
+
     pub fn update_camera(&mut self, delta_time: Time) {
         if self.rooms.contains(Index::from_raw_parts(0, 0)) && self.rooms.len() == 1
             || self.player.draw_action.is_some()
@@ -299,8 +303,13 @@ impl Model {
             return;
         }
 
-        let mut dist = (room.area.min.x - pos.x).abs();
+        let mut dist = r32(9999999999.0);
         let mut closest = Direction::Left;
+        let left = room.area.min.x - pos.x;
+        if left > Coord::ZERO && left < dist {
+            dist = left;
+            closest = Direction::Left;
+        }
         let right = pos.x - room.area.max.x;
         if right > Coord::ZERO && right < dist {
             dist = right;
@@ -332,11 +341,47 @@ impl Model {
                 .extend_up(size.y)
                 .extend_symmetric(vec2(size.x, Coord::ZERO) / r32(2.0)),
         };
-        self.rooms.insert(Room {
+        let new_room = self.rooms.insert(Room {
             area: new_room,
             unlocked_after: Some(room_idx),
         });
         self.update_room_colliders();
+        self.spawn_enemies(new_room);
+    }
+
+    pub fn spawn_enemies(&mut self, room_idx: Index) {
+        let Some(room) = self.rooms.get(room_idx) else {
+            return;
+        };
+
+        let mut rng = thread_rng();
+        let mut difficulty = r32(5.0); // TODO dynamic
+        while let Some(config) = self
+            .config
+            .enemies
+            .iter()
+            .filter(|config| config.cost <= difficulty)
+            .choose(&mut rng)
+        {
+            for _ in 0..50 {
+                let position = vec2(
+                    rng.gen_range(room.area.min.x..=room.area.max.x),
+                    rng.gen_range(room.area.min.y..=room.area.max.y),
+                );
+                if (self.player.body.collider.position - position).len() < r32(5.0) {
+                    continue;
+                }
+
+                difficulty -= config.cost;
+                self.enemies.push(Enemy {
+                    health: Bounded::new_max(config.health),
+                    body: PhysicsBody::new(position, config.shape),
+                    ai: config.ai.clone(),
+                    stats: config.clone(),
+                });
+                break;
+            }
+        }
     }
 }
 

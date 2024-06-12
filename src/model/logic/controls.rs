@@ -2,6 +2,7 @@ use super::*;
 
 impl Model {
     pub fn controls(&mut self, input: PlayerControls, delta_time: Time) {
+        let can_expand = self.can_expand();
         let player = &mut self.player;
 
         // Movement
@@ -36,12 +37,17 @@ impl Model {
 
                 let drawing = player.draw_action.as_mut().unwrap();
                 let remaining = player.stats.dash.max_distance - drawing.length();
-                if remaining > Coord::ZERO {
+                let inside = self
+                    .rooms
+                    .iter()
+                    .any(|(_, room)| room.area.contains(point.position));
+                if remaining > Coord::ZERO && (inside || can_expand) {
                     // Add a point
                     let last = drawing
                         .points_raw
                         .last()
                         .expect("drawing has to have at least one starting point");
+                    // Clamp max dash distance
                     point.position =
                         last.position + (point.position - last.position).clamp_len(..=remaining);
                     drawing.points_raw.push(point);
@@ -85,11 +91,15 @@ impl Model {
             return;
         }
 
-        let room = self
-            .rooms
-            .iter()
-            .find(|(_, room)| room.area.contains(self.player.body.collider.position))
-            .map(|(idx, _)| idx);
+        let can_expand = self.can_expand();
+        let expand_room = can_expand
+            .then(|| {
+                self.rooms
+                    .iter()
+                    .find(|(_, room)| room.area.contains(self.player.body.collider.position))
+                    .map(|(idx, _)| idx)
+            })
+            .flatten();
 
         let &last = drawing.points_smoothed.last().unwrap();
         let &prelast = drawing
@@ -107,7 +117,7 @@ impl Model {
             self.player.stats.dash.damage,
         );
 
-        if let Some(room) = room {
+        if let Some(room) = expand_room {
             self.unlock_room(room, self.player.body.collider.position);
         }
     }

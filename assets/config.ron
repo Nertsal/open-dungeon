@@ -11,4 +11,22 @@ Config(
             damage: 10.0,
         ),
     ),
+    enemies: [
+        EnemyConfig(
+            cost: 1.0,
+            health: 10.0,
+            speed: 3.0,
+            acceleration: 5.0,
+            shape: Circle( radius: 0.4 ),
+            ai: Crawler,
+        ),
+        EnemyConfig(
+            cost: 1.0,
+            health: 20.0,
+            speed: 2.0,
+            acceleration: 5.0,
+            shape: Rectangle( width: 0.9, height: 0.9 ),
+            ai: Crawler,
+        ),
+    ],
 )

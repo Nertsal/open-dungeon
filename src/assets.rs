@@ -38,6 +38,7 @@ pub struct Controls {
 pub struct Config {
     pub starting_area: vec2<Coord>,
     pub player: PlayerConfig,
+    pub enemies: Vec<EnemyConfig>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -50,9 +51,12 @@ pub struct PlayerConfig {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct EnemyConfig {
+    pub cost: R32,
     pub health: Hp,
     pub speed: Coord,
     pub acceleration: Coord,
+    pub shape: Shape,
+    pub ai: EnemyAI,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

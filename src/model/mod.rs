@@ -75,7 +75,7 @@ pub struct Enemy {
     pub ai: EnemyAI,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum EnemyAI {
     Idle,
     Crawler,
