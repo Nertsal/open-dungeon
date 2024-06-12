@@ -12,12 +12,30 @@ impl Model {
         self.controls(input, delta_time);
         self.ai(delta_time);
         self.collisions(delta_time);
+        self.passive_particles(delta_time);
         self.check_deaths(delta_time);
         self.update_camera(delta_time);
     }
 
     pub fn can_expand(&self) -> bool {
         self.enemies.is_empty()
+    }
+
+    pub fn passive_particles(&mut self, _delta_time: Time) {
+        let kind = if self.can_expand() {
+            ParticleKind::WallBreakable
+        } else {
+            ParticleKind::WallBlock
+        };
+        for collider in &self.room_colliders {
+            self.particles_queue.push(SpawnParticles {
+                kind,
+                density: r32(0.005),
+                distribution: ParticleDistribution::Aabb(collider.compute_aabb()),
+                lifetime: r32(2.0)..=r32(3.0),
+                ..default()
+            });
+        }
     }
 
     pub fn update_camera(&mut self, delta_time: Time) {

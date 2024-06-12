@@ -13,6 +13,8 @@ pub struct SpawnParticles {
 #[derive(Debug, Clone, Copy)]
 pub enum ParticleKind {
     Draw,
+    WallBreakable,
+    WallBlock,
     Bounce,
     Damage,
 }
@@ -21,11 +23,23 @@ pub enum ParticleKind {
 pub enum ParticleDistribution {
     Circle { center: Position, radius: Coord },
     Drawing { points: Vec<Position>, width: Coord },
+    Aabb(Aabb2<Coord>),
 }
 
 impl ParticleDistribution {
     pub fn sample(&self, rng: &mut impl Rng, density: R32) -> Vec<Position> {
         match self {
+            &ParticleDistribution::Aabb(aabb) => {
+                let amount = (density * aabb.width() * aabb.height()).ceil().as_f32() as usize;
+                (0..amount)
+                    .map(|_| {
+                        vec2(
+                            rng.gen_range(aabb.min.x..=aabb.max.x),
+                            rng.gen_range(aabb.min.y..=aabb.max.y),
+                        )
+                    })
+                    .collect()
+            }
             &ParticleDistribution::Circle { center, radius } => {
                 let amount = (density * radius.sqr() * R32::PI).ceil().as_f32() as usize;
                 (0..amount)

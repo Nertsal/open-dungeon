@@ -12,6 +12,8 @@ pub struct Assets {
 pub struct Palette {
     pub background: Rgba<f32>,
     pub room: Rgba<f32>,
+    pub wall: Rgba<f32>,
+    pub wall_block: Rgba<f32>,
     pub player: Rgba<f32>,
     pub object: Rgba<f32>,
     pub enemy: Rgba<f32>,

@@ -1,7 +1,9 @@
-// https://lospec.com/palette-list/cozy-tones
+// <https://lospec.com/palette-list/cozy-tones>
 Palette(
     background: "#080826",
     room: "#280a33",
+    wall: "#5c9974",
+    wall_block: "#4d0f32",
     player: "#76bd5e",
     object: "#234a57",
     enemy: "#b35f47",
