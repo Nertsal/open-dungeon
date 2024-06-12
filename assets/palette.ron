@@ -1,15 +1,15 @@
-// <https://lospec.com/palette-list/cozy-tones>
+// <https://lospec.com/palette-list/bornana-12>
 Palette(
-    background: "#080826",
-    room: "#280a33",
-    wall: "#5c9974",
-    wall_block: "#4d0f32",
-    player: "#76bd5e",
+    background: "#01061c",
+    room: "#031b30",
+    wall: "#fdffcf",
+    wall_block: "#e8985f",
+    player: "#fdffcf",
     object: "#234a57",
-    enemy: "#b35f47",
-    health: "#4d0f32",
-    drawing: "#e3de88",
-    dash: "#5c9974",
-    damage: "#4d0f32",
-    collision: "#5c9974",
+    enemy: "#eaf257",
+    health: "#b52d6d",
+    drawing: "#e6c081",
+    dash: "#fdffcf",
+    damage: "#b52d6d",
+    collision: "#eaf257",
 )
