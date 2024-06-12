@@ -13,6 +13,7 @@ impl Model {
             self.events.push(Event::Sound(SoundEvent::Drawing));
         }
 
+        self.compress_rooms(delta_time);
         self.controls(input, delta_time);
         self.ai(delta_time);
         self.collisions(delta_time);
@@ -413,6 +414,67 @@ impl Model {
                 break;
             }
         }
+    }
+
+    pub fn compress_rooms(&mut self, delta_time: Time) {
+        if self.can_expand() {
+            // Pause for expansion
+            return;
+        }
+
+        let speed = r32(3.0); // TODO: dynamic with difficulty
+        let ids: Vec<_> = self.rooms.iter().map(|(idx, _)| idx).collect();
+        for (_, room) in &mut self.rooms {
+            let dir = room
+                .unlocked_after
+                .map_or(true, |(idx, _)| !ids.contains(&idx))
+                .then(|| {
+                    room.expanded_direction
+                        .or(room.unlocked_after.map(|(_, dir)| dir.opposite()))
+                })
+                .flatten();
+            if let Some(dir) = dir {
+                let shift = speed * delta_time;
+                match dir {
+                    Direction::Right => room.area.min.x += shift,
+                    Direction::Left => room.area.max.x -= shift,
+                    Direction::Up => room.area.min.y += shift,
+                    Direction::Down => room.area.max.y -= shift,
+                }
+            }
+        }
+
+        let min = r32(0.01);
+        let squashed: Vec<_> = self
+            .rooms
+            .iter()
+            .filter(|(_, room)| room.area.width() <= min || room.area.height() <= min)
+            .map(|(idx, _)| idx)
+            .collect();
+        self.squash_rooms(&squashed);
+        self.update_room_colliders();
+    }
+
+    pub fn squash_rooms(&mut self, ids: &[Index]) {
+        let should_squash = |pos| {
+            self.rooms
+                .iter()
+                .find(|(_, room)| room.area.contains(pos))
+                .map_or(true, |(idx, _)| ids.contains(&idx))
+        };
+
+        let player = &mut self.player;
+        if should_squash(player.body.collider.position) {
+            player.health.set_ratio(Hp::ZERO);
+        }
+
+        for enemy in &mut self.enemies {
+            if should_squash(enemy.body.collider.position) {
+                enemy.health.set_ratio(Hp::ZERO);
+            }
+        }
+
+        self.rooms.retain(|idx, _| !ids.contains(&idx));
     }
 }
 
