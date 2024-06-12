@@ -12,6 +12,7 @@ pub type Position = vec2<Coord>;
 pub type Time = R32;
 pub type Hp = R32;
 pub type Health = Bounded<Hp>;
+pub type Score = u64;
 
 pub struct Model {
     pub config: Config,
@@ -22,6 +23,8 @@ pub struct Model {
 
     pub rooms_cleared: usize,
     pub difficulty: R32,
+    pub score: Score,
+
     pub player: Player,
     pub rooms: Arena<Room>,
     pub room_colliders: Vec<(Index, Direction, Collider)>,
@@ -226,6 +229,8 @@ impl Model {
 
             rooms_cleared: 0,
             difficulty: config.difficulty.initial,
+            score: 0,
+
             player: Player {
                 health: Health::new_max(config.player.health),
                 body: PhysicsBody::new(vec2::ZERO, config.player.shape),

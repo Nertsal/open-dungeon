@@ -7,6 +7,9 @@ Config(
         room_bonus: 1.0,
         room_exponent: 1.1,
     ),
+    score: ScoreConfig(
+        room_bonus: 1000,
+    ),
     player: PlayerConfig(
         health: 50.0,
         speed: 7.0,
@@ -22,6 +25,7 @@ Config(
     enemies: [
         EnemyConfig(
             cost: 1.0,
+            score: 50,
             health: 10.0,
             speed: 3.0,
             acceleration: 5.0,
@@ -30,6 +34,7 @@ Config(
         ),
         EnemyConfig(
             cost: 3.0,
+            score: 100,
             health: 15.0,
             speed: 2.0,
             acceleration: 5.0,
@@ -38,6 +43,7 @@ Config(
         ),
         EnemyConfig(
             cost: 5.0,
+            score: 200,
             health: 20.0,
             speed: 2.0,
             acceleration: 5.0,
@@ -46,6 +52,7 @@ Config(
                 preferred_distance: 10.0,
                 charge: ( value: 0.0, min: 0.0, max: 1.5 ),
                 bullet: EnemyConfig(
+                    score: 10,
                     health: 5.0,
                     speed: 3.0,
                     acceleration: 5.0,

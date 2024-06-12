@@ -110,22 +110,33 @@ impl GameRender {
             );
         }
 
-        // Remaining dash charge
-        if let Some(drawing) = &model.player.draw_action {
-            let ratio = (drawing.length() / model.player.stats.dash.max_distance).as_f32();
-            if ratio < 1.0 {
-                let draw =
-                    Aabb2::point(model.camera.center + vec2(0.0, model.camera.fov * 0.9 / 2.0))
-                        .extend_symmetric(vec2(3.0, 0.3) / 2.0);
-                let draw = draw.extend_symmetric(vec2(draw.width() * (-ratio), 0.0) / 2.0);
-                self.geng.draw2d().quad(
-                    framebuffer,
-                    &model.camera,
-                    draw,
-                    self.assets.palette.drawing,
-                );
-            }
-        }
+        // // Remaining dash charge
+        // if let Some(drawing) = &model.player.draw_action {
+        //     let ratio = (drawing.length() / model.player.stats.dash.max_distance).as_f32();
+        //     if ratio < 1.0 {
+        //         let draw =
+        //             Aabb2::point(model.camera.center + vec2(0.0, model.camera.fov * 0.9 / 2.0))
+        //                 .extend_symmetric(vec2(3.0, 0.3) / 2.0);
+        //         let draw = draw.extend_symmetric(vec2(draw.width() * (-ratio), 0.0) / 2.0);
+        //         self.geng.draw2d().quad(
+        //             framebuffer,
+        //             &model.camera,
+        //             draw,
+        //             self.assets.palette.drawing,
+        //         );
+        //     }
+        // }
+
+        // Score
+        self.geng.default_font().draw(
+            framebuffer,
+            &model.camera,
+            &format!("SCORE: {}", model.score),
+            vec2::splat(geng::TextAlign::CENTER),
+            mat3::translate(model.camera.center + vec2(0.0, model.camera.fov / 2.0 * 0.9))
+                * mat3::scale_uniform(1.5),
+            self.assets.palette.text,
+        )
     }
 
     pub fn draw_collider(

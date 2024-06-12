@@ -23,6 +23,7 @@ pub struct Sounds {
 #[load(serde = "ron")]
 pub struct Palette {
     pub background: Rgba<f32>,
+    pub text: Rgba<f32>,
     pub room: Rgba<f32>,
     pub wall: Rgba<f32>,
     pub wall_block: Rgba<f32>,
@@ -53,8 +54,14 @@ pub struct Controls {
 pub struct Config {
     pub starting_area: vec2<Coord>,
     pub difficulty: DifficultyConfig,
+    pub score: ScoreConfig,
     pub player: PlayerConfig,
     pub enemies: Vec<EnemyConfig>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ScoreConfig {
+    pub room_bonus: Score,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -77,6 +84,7 @@ pub struct PlayerConfig {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct EnemyConfig {
     pub cost: Option<R32>,
+    pub score: Option<Score>,
     pub health: Hp,
     pub speed: Coord,
     pub acceleration: Coord,

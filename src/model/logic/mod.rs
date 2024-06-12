@@ -172,6 +172,7 @@ impl Model {
         self.enemies.retain(|enemy| {
             let alive = enemy.health.is_above_min();
             if !alive {
+                self.score += enemy.stats.score.unwrap_or(0);
                 self.events.push(Event::Sound(SoundEvent::Kill));
             }
             alive
@@ -223,6 +224,7 @@ impl Model {
                 .difficulty
                 .room_exponent
                 .powf(r32(self.rooms_cleared as f32));
+        self.score += self.config.score.room_bonus;
     }
 
     pub fn ai(&mut self, delta_time: Time) {

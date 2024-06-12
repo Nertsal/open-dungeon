@@ -1,6 +1,7 @@
 // <https://lospec.com/palette-list/bornana-12>
 Palette(
     background: "#01061c",
+    text: "#e6c081",
     room: "#031b30",
     wall: "#fdffcf",
     wall_block: "#e8985f",
