@@ -26,12 +26,20 @@ impl Model {
     }
 
     pub fn passive_particles(&mut self, _delta_time: Time) {
-        let kind = if self.can_expand() {
-            ParticleKind::WallBreakable
-        } else {
-            ParticleKind::WallBlock
-        };
-        for collider in &self.room_colliders {
+        let can_expand = self.can_expand();
+        for (index, direction, collider) in &self.room_colliders {
+            let can_expand = can_expand
+                && self.rooms.get(*index).map_or(false, |room| {
+                    room.expanded_direction.is_none()
+                        && room
+                            .unlocked_after
+                            .map_or(true, |(_, dir)| dir != *direction)
+                });
+            let kind = if can_expand {
+                ParticleKind::WallBreakable
+            } else {
+                ParticleKind::WallBlock
+            };
             self.particles_queue.push(SpawnParticles {
                 kind,
                 density: r32(0.005),
@@ -110,7 +118,7 @@ impl Model {
 
         // Room collisions
         let player = &mut self.player;
-        for room in &self.room_colliders {
+        for (_, _, room) in &self.room_colliders {
             if let Some(collision) = player.body.collider.collide(room) {
                 if player.body.velocity.len_sqr() > r32(1.0) {
                     self.events.push(Event::Sound(SoundEvent::Bounce));
@@ -259,7 +267,7 @@ impl Model {
             .collect();
 
         for (idx, room) in &self.rooms {
-            if let Some(prev_idx) = room.unlocked_after {
+            if let Some((prev_idx, _)) = room.unlocked_after {
                 if let Some(prev_room) = self.rooms.get(prev_idx) {
                     let room = room.area;
                     let prev = prev_room.area;
@@ -307,39 +315,32 @@ impl Model {
             )
         };
 
-        let colliders = all_sides
-            .into_values()
-            .flat_map(|sides| {
-                sides
-                    .left
-                    .into_iter()
-                    .map(move |segment| wall_vert(sides.room.min.x, segment))
-                    .chain(
-                        sides
-                            .right
-                            .into_iter()
-                            .map(move |segment| wall_vert(sides.room.max.x, segment)),
-                    )
-                    .chain(
-                        sides
-                            .bottom
-                            .into_iter()
-                            .map(move |segment| wall_horiz(sides.room.min.y, segment)),
-                    )
-                    .chain(
-                        sides
-                            .top
-                            .into_iter()
-                            .map(move |segment| wall_horiz(sides.room.max.y, segment)),
-                    )
-            })
-            .collect();
+        let colliders =
+            all_sides
+                .into_iter()
+                .flat_map(|(idx, sides)| {
+                    sides
+                        .left
+                        .into_iter()
+                        .map(move |segment| (Direction::Left, wall_vert(sides.room.min.x, segment)))
+                        .chain(sides.right.into_iter().map(move |segment| {
+                            (Direction::Right, wall_vert(sides.room.max.x, segment))
+                        }))
+                        .chain(sides.bottom.into_iter().map(move |segment| {
+                            (Direction::Down, wall_horiz(sides.room.min.y, segment))
+                        }))
+                        .chain(sides.top.into_iter().map(move |segment| {
+                            (Direction::Up, wall_horiz(sides.room.max.y, segment))
+                        }))
+                        .map(move |(dir, collider)| (idx, dir, collider))
+                })
+                .collect();
         self.room_colliders = colliders;
     }
 
     pub fn unlock_room(&mut self, room_idx: Index, pos: Position) {
         let mut rng = thread_rng();
-        let Some(room) = self.rooms.get(room_idx) else {
+        let Some(room) = self.rooms.get_mut(room_idx) else {
             return;
         };
 
@@ -347,29 +348,12 @@ impl Model {
             return;
         }
 
-        let mut dist = r32(9999999999.0);
-        let mut closest = Direction::Left;
-        let left = room.area.min.x - pos.x;
-        if left > Coord::ZERO && left < dist {
-            dist = left;
-            closest = Direction::Left;
-        }
-        let right = pos.x - room.area.max.x;
-        if right > Coord::ZERO && right < dist {
-            dist = right;
-            closest = Direction::Right;
-        }
-        let bottom = room.area.min.y - pos.y;
-        if bottom > Coord::ZERO && bottom < dist {
-            dist = bottom;
-            closest = Direction::Down;
-        }
-        let top = pos.y - room.area.max.y;
-        if top > Coord::ZERO && top < dist {
-            // dist = top;
-            closest = Direction::Up;
-        }
+        let closest = room.closest_wall(pos).1;
+        // if room.unlocked_after.map_or(false, |(_, dir)| dir == closest) {
+        //     return;
+        // }
 
+        room.expanded_direction = Some(closest);
         let size = vec2(rng.gen_range(15.0..=25.0), rng.gen_range(15.0..=25.0)).as_r32();
         let new_room = match closest {
             Direction::Left => Aabb2::point(vec2(room.area.min.x, room.area.center().y))
@@ -385,9 +369,11 @@ impl Model {
                 .extend_up(size.y)
                 .extend_symmetric(vec2(size.x, Coord::ZERO) / r32(2.0)),
         };
+        log::debug!("Expanding room near {room_idx:?}, {closest:?}");
         let new_room = self.rooms.insert(Room {
             area: new_room,
-            unlocked_after: Some(room_idx),
+            unlocked_after: Some((room_idx, closest.opposite())),
+            expanded_direction: None,
         });
         self.update_room_colliders();
         self.spawn_enemies(new_room);

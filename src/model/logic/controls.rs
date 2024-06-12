@@ -37,10 +37,24 @@ impl Model {
 
                 let drawing = player.draw_action.as_mut().unwrap();
                 let remaining = player.stats.dash.max_distance - drawing.length();
+
                 let inside = self
                     .rooms
                     .iter()
                     .any(|(_, room)| room.area.contains(point.position));
+                let direction = self
+                    .rooms
+                    .iter()
+                    .find(|(_, room)| room.area.contains(player.body.collider.position))
+                    .map(|(_, room)| (room, room.closest_wall(point.position)));
+                let can_expand = can_expand
+                    && direction.map_or(false, |(room, (_, direction))| {
+                        room.expanded_direction.is_none()
+                            && room
+                                .unlocked_after
+                                .map_or(true, |(_, dir)| dir != direction)
+                    });
+
                 if remaining > Coord::ZERO && (inside || can_expand) {
                     // Add a point
                     let last = drawing
@@ -122,7 +136,13 @@ impl Model {
         );
 
         if let Some(room) = expand_room {
-            self.unlock_room(room, self.player.body.collider.position);
+            if !self
+                .rooms
+                .iter()
+                .any(|(_, room)| room.area.contains(self.player.body.collider.position))
+            {
+                self.unlock_room(room, self.player.body.collider.position);
+            }
         }
     }
 }

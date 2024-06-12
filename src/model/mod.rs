@@ -22,7 +22,7 @@ pub struct Model {
 
     pub player: Player,
     pub rooms: Arena<Room>,
-    pub room_colliders: Vec<Collider>,
+    pub room_colliders: Vec<(Index, Direction, Collider)>,
     pub objects: Vec<Object>,
     pub enemies: Vec<Enemy>,
     pub particles: Arena<Particle>,
@@ -50,7 +50,36 @@ pub enum SoundEvent {
 pub struct Room {
     pub area: Aabb2<Coord>,
     /// Index of the room the player unlocked this room from.
-    pub unlocked_after: Option<Index>,
+    pub unlocked_after: Option<(Index, Direction)>,
+    pub expanded_direction: Option<Direction>,
+}
+
+impl Room {
+    pub fn closest_wall(&self, pos: Position) -> (Coord, Direction) {
+        let mut dist = r32(9999999999.0);
+        let mut closest = Direction::Left;
+        let left = self.area.min.x - pos.x;
+        if left > Coord::ZERO && left < dist {
+            dist = left;
+            closest = Direction::Left;
+        }
+        let right = pos.x - self.area.max.x;
+        if right > Coord::ZERO && right < dist {
+            dist = right;
+            closest = Direction::Right;
+        }
+        let bottom = self.area.min.y - pos.y;
+        if bottom > Coord::ZERO && bottom < dist {
+            dist = bottom;
+            closest = Direction::Down;
+        }
+        let top = pos.y - self.area.max.y;
+        if top > Coord::ZERO && top < dist {
+            dist = top;
+            closest = Direction::Up;
+        }
+        (dist, closest)
+    }
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -59,6 +88,17 @@ pub enum Direction {
     Right,
     Down,
     Up,
+}
+
+impl Direction {
+    pub fn opposite(&self) -> Self {
+        match self {
+            Self::Left => Self::Right,
+            Self::Right => Self::Left,
+            Self::Down => Self::Up,
+            Self::Up => Self::Down,
+        }
+    }
 }
 
 #[derive(Debug, Clone)]
@@ -138,6 +178,7 @@ impl Model {
         rooms.insert(Room {
             area: Aabb2::ZERO.extend_symmetric(config.starting_area / r32(2.0)),
             unlocked_after: None,
+            expanded_direction: None,
         });
 
         let mut model = Self {
