@@ -68,13 +68,12 @@ impl Model {
         let player = &mut self.player;
         for object in &self.objects {
             if let Some(collision) = player.body.collider.collide(&object.collider) {
-                if player.body.velocity.len_sqr() > r32(1.0) {
+                player.body.collider.position -= collision.normal * collision.penetration;
+                let projection = vec2::dot(player.body.velocity, collision.normal);
+                player.body.velocity -= collision.normal * projection;
+                if projection > r32(1.0) {
                     self.events.push(Event::Sound(SoundEvent::Bounce));
                 }
-
-                player.body.collider.position -= collision.normal * collision.penetration;
-                player.body.velocity -=
-                    collision.normal * vec2::dot(player.body.velocity, collision.normal);
             }
         }
 
@@ -121,28 +120,25 @@ impl Model {
         let player = &mut self.player;
         for (_, _, room) in &self.room_colliders {
             if let Some(collision) = player.body.collider.collide(room) {
-                if player.body.velocity.len_sqr() > r32(1.0) {
-                    self.events.push(Event::Sound(SoundEvent::Bounce));
-                }
-
                 let bounciness = r32(0.8);
                 player.body.collider.position -= collision.normal * collision.penetration;
-                player.body.velocity -= collision.normal
-                    * vec2::dot(player.body.velocity, collision.normal)
-                    * (Coord::ONE + bounciness);
+                let projection = vec2::dot(player.body.velocity, collision.normal);
+                player.body.velocity -= collision.normal * projection * (Coord::ONE + bounciness);
+                if projection > r32(1.0) {
+                    self.events.push(Event::Sound(SoundEvent::Bounce));
+                }
             }
 
             for enemy in &mut self.enemies {
                 if let Some(collision) = enemy.body.collider.collide(room) {
-                    if enemy.body.velocity.len_sqr() > r32(1.0) {
-                        self.events.push(Event::Sound(SoundEvent::Bounce));
-                    }
-
                     let bounciness = r32(0.8);
                     enemy.body.collider.position -= collision.normal * collision.penetration;
-                    enemy.body.velocity -= collision.normal
-                        * vec2::dot(enemy.body.velocity, collision.normal)
-                        * (Coord::ONE + bounciness);
+                    let projection = vec2::dot(enemy.body.velocity, collision.normal);
+                    enemy.body.velocity -=
+                        collision.normal * projection * (Coord::ONE + bounciness);
+                    if projection > r32(1.0) {
+                        self.events.push(Event::Sound(SoundEvent::Bounce));
+                    }
                 }
             }
         }
@@ -451,11 +447,18 @@ impl Model {
             .filter(|(_, room)| room.area.width() <= min || room.area.height() <= min)
             .map(|(idx, _)| idx)
             .collect();
-        self.squash_rooms(&squashed);
-        self.update_room_colliders();
+        if squashed.is_empty() {
+            self.update_room_colliders();
+        } else {
+            self.squash_rooms(&squashed);
+        }
     }
 
     pub fn squash_rooms(&mut self, ids: &[Index]) {
+        if ids.is_empty() {
+            return;
+        }
+
         let should_squash = |pos| {
             self.rooms
                 .iter()
@@ -475,6 +478,8 @@ impl Model {
         }
 
         self.rooms.retain(|idx, _| !ids.contains(&idx));
+        log::debug!("Squashed rooms {ids:?}");
+        self.update_room_colliders();
     }
 }
 
