@@ -156,6 +156,10 @@ impl Model {
             UpgradeEffect::Width => self.player.stats.dash.width += r32(0.5),
             UpgradeEffect::Range => self.player.stats.dash.max_distance += r32(3.0),
             UpgradeEffect::Damage => self.player.stats.dash.damage += r32(5.0),
+            UpgradeEffect::Speed => {
+                self.player.stats.speed += r32(2.0);
+                self.player.stats.acceleration += r32(5.0);
+            }
         };
         self.particles_queue.push(SpawnParticles {
             kind: ParticleKind::Upgrade,
@@ -203,17 +207,20 @@ impl Model {
             vec2(0.0, 2.5).as_r32()
         };
 
+        let mut rng = thread_rng();
         let options = [
             UpgradeEffect::Width,
             UpgradeEffect::Range,
             UpgradeEffect::Damage,
+            UpgradeEffect::Speed,
         ];
+        let options: Vec<_> = options.choose_multiple(&mut rng, 2).collect();
         let upgrades = options.iter().enumerate().map(|(i, effect)| Upgrade {
             collider: Collider::new(
                 room.area.center() + offset * r32(i as f32 - (options.len() as f32 - 1.0) / 2.0),
                 Shape::circle(0.5),
             ),
-            effect: effect.clone(),
+            effect: (**effect).clone(),
         });
         self.upgrades.extend(upgrades);
 

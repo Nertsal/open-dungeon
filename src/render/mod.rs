@@ -66,12 +66,27 @@ impl GameRender {
 
         // Upgrades
         for upgrade in &model.upgrades {
-            self.draw_collider(
-                &upgrade.collider,
-                self.assets.palette.upgrade,
-                &model.camera,
-                framebuffer,
-            );
+            // self.draw_collider(
+            //     &upgrade.collider,
+            //     self.assets.palette.upgrade,
+            //     &model.camera,
+            //     framebuffer,
+            // );
+            let texture = match &upgrade.effect {
+                UpgradeEffect::Width => &self.assets.sprites.width,
+                UpgradeEffect::Range => &self.assets.sprites.range,
+                UpgradeEffect::Damage => &self.assets.sprites.damage,
+                UpgradeEffect::Speed => &self.assets.sprites.speed,
+            };
+
+            let pos = upgrade.collider.compute_aabb().center().as_f32();
+            if let Some(pos) = model
+                .camera
+                .world_to_screen(framebuffer.size().as_f32(), pos)
+            {
+                let quad = Aabb2::point(pos);
+                self.draw_texture(quad, texture, self.assets.palette.upgrade, framebuffer);
+            }
         }
 
         // Player
@@ -126,6 +141,24 @@ impl GameRender {
         //         );
         //     }
         // }
+    }
+
+    pub fn draw_texture(
+        &self,
+        quad: Aabb2<f32>,
+        texture: &ugli::Texture,
+        color: Rgba<f32>,
+        framebuffer: &mut ugli::Framebuffer,
+    ) {
+        let size = texture.size().as_f32(); // * pixel_scale(framebuffer);
+        let pos = geng_utils::layout::align_aabb(size, quad, vec2(0.5, 0.5));
+        self.geng.draw2d().textured_quad(
+            framebuffer,
+            &geng::PixelPerfectCamera,
+            pos,
+            texture,
+            color,
+        );
     }
 
     pub fn draw_ui(&self, model: &Model, framebuffer: &mut ugli::Framebuffer) {

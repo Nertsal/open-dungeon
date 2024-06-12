@@ -6,6 +6,7 @@ pub struct Assets {
     pub config: Config,
     pub palette: Palette,
     pub sounds: Sounds,
+    pub sprites: Sprites,
 }
 
 #[derive(geng::asset::Load)]
@@ -17,6 +18,20 @@ pub struct Sounds {
     pub hit_self: geng::Sound,
     pub bounce: geng::Sound,
     pub expand: geng::Sound,
+}
+
+#[derive(geng::asset::Load)]
+pub struct Sprites {
+    #[load(options(filter = "ugli::Filter::Nearest"))]
+    pub width: ugli::Texture,
+    #[load(options(filter = "ugli::Filter::Nearest"))]
+    pub range: ugli::Texture,
+    #[load(options(filter = "ugli::Filter::Nearest"))]
+    pub damage: ugli::Texture,
+    #[load(options(filter = "ugli::Filter::Nearest"))]
+    pub speed: ugli::Texture,
+    #[load(options(filter = "ugli::Filter::Nearest"))]
+    pub heal: ugli::Texture,
 }
 
 #[derive(geng::asset::Load, Debug, Clone, Serialize, Deserialize)]

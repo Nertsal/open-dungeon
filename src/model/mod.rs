@@ -124,6 +124,8 @@ pub enum UpgradeEffect {
     Width,
     Range,
     Damage,
+    Speed,
+    // Heal,
 }
 
 #[derive(Debug, Clone)]
