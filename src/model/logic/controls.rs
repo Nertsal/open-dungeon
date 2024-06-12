@@ -74,6 +74,12 @@ impl Model {
             return;
         }
 
+        let room = self
+            .rooms
+            .iter()
+            .find(|(_, room)| room.area.contains(self.player.body.collider.position))
+            .map(|(idx, _)| idx);
+
         let &last = drawing.points_smoothed.last().unwrap();
         let &prelast = drawing
             .points_smoothed
@@ -89,5 +95,9 @@ impl Model {
             self.player.stats.dash.width,
             self.player.stats.dash.damage,
         );
+
+        if let Some(room) = room {
+            self.unlock_room(room, self.player.body.collider.position);
+        }
     }
 }

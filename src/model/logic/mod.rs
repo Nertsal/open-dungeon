@@ -13,6 +13,17 @@ impl Model {
         self.ai(delta_time);
         self.collisions(delta_time);
         self.check_deaths(delta_time);
+        self.update_camera(delta_time);
+    }
+
+    pub fn update_camera(&mut self, delta_time: Time) {
+        if self.rooms.contains(Index::from_raw_parts(0, 0)) && self.rooms.len() == 1 {
+            return;
+        }
+
+        let offset = (self.player.body.collider.position - self.camera.center.as_r32()) / r32(0.5)
+            * delta_time;
+        self.camera.center += offset.as_f32();
     }
 
     pub fn collisions(&mut self, _delta_time: Time) {
@@ -270,6 +281,56 @@ impl Model {
             })
             .collect();
         self.room_colliders = colliders;
+    }
+
+    pub fn unlock_room(&mut self, room_idx: Index, pos: Position) {
+        let mut rng = thread_rng();
+        let Some(room) = self.rooms.get(room_idx) else {
+            return;
+        };
+
+        if room.area.contains(pos) {
+            return;
+        }
+
+        let mut dist = (room.area.min.x - pos.x).abs();
+        let mut closest = Direction::Left;
+        let right = pos.x - room.area.max.x;
+        if right > Coord::ZERO && right < dist {
+            dist = right;
+            closest = Direction::Right;
+        }
+        let bottom = room.area.min.y - pos.y;
+        if bottom > Coord::ZERO && bottom < dist {
+            dist = bottom;
+            closest = Direction::Down;
+        }
+        let top = pos.y - room.area.max.y;
+        if top > Coord::ZERO && top < dist {
+            // dist = top;
+            closest = Direction::Up;
+        }
+
+        let size = vec2(rng.gen_range(15.0..=25.0), rng.gen_range(15.0..=25.0)).as_r32();
+        let new_room = match closest {
+            Direction::Left => Aabb2::point(vec2(room.area.min.x, room.area.center().y))
+                .extend_left(size.x)
+                .extend_symmetric(vec2(Coord::ZERO, size.y) / r32(2.0)),
+            Direction::Right => Aabb2::point(vec2(room.area.max.x, room.area.center().y))
+                .extend_right(size.x)
+                .extend_symmetric(vec2(Coord::ZERO, size.y) / r32(2.0)),
+            Direction::Down => Aabb2::point(vec2(room.area.center().x, room.area.min.y))
+                .extend_down(size.y)
+                .extend_symmetric(vec2(size.x, Coord::ZERO) / r32(2.0)),
+            Direction::Up => Aabb2::point(vec2(room.area.center().x, room.area.max.y))
+                .extend_up(size.y)
+                .extend_symmetric(vec2(size.x, Coord::ZERO) / r32(2.0)),
+        };
+        self.rooms.insert(Room {
+            area: new_room,
+            unlocked_after: Some(room_idx),
+        });
+        self.update_room_colliders();
     }
 }
 

@@ -37,6 +37,14 @@ pub struct Room {
     pub unlocked_after: Option<Index>,
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum Direction {
+    Left,
+    Right,
+    Down,
+    Up,
+}
+
 #[derive(Debug, Clone)]
 pub struct Object {
     pub collider: Collider,
@@ -120,7 +128,7 @@ impl Model {
             camera: Camera {
                 center: vec2::ZERO,
                 rotation: Angle::ZERO,
-                fov: 20.0,
+                fov: 30.0,
             },
             real_time: Time::ZERO,
             game_time: Time::ZERO,
