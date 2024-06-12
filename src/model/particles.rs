@@ -17,6 +17,7 @@ pub enum ParticleKind {
     WallBlock,
     Bounce,
     Damage,
+    Upgrade,
 }
 
 #[derive(Debug, Clone)]

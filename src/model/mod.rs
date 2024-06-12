@@ -25,6 +25,7 @@ pub struct Model {
     pub room_colliders: Vec<(Index, Direction, Collider)>,
     pub objects: Vec<Object>,
     pub enemies: Vec<Enemy>,
+    pub upgrades: Vec<Upgrade>,
     pub particles: Arena<Particle>,
 
     pub particles_queue: Vec<SpawnParticles>,
@@ -105,6 +106,19 @@ impl Direction {
 #[derive(Debug, Clone)]
 pub struct Object {
     pub collider: Collider,
+}
+
+#[derive(Debug, Clone)]
+pub struct Upgrade {
+    pub collider: Collider,
+    pub effect: UpgradeEffect,
+}
+
+#[derive(Debug, Clone)]
+pub enum UpgradeEffect {
+    Width,
+    Range,
+    Damage,
 }
 
 #[derive(Debug, Clone)]
@@ -216,8 +230,9 @@ impl Model {
             },
             rooms,
             room_colliders: Vec::new(),
-            objects: vec![],
-            enemies: vec![],
+            objects: Vec::new(),
+            enemies: Vec::new(),
+            upgrades: Vec::new(),
             particles: Arena::new(),
 
             particles_queue: Vec::new(),

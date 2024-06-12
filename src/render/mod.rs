@@ -64,6 +64,16 @@ impl GameRender {
             );
         }
 
+        // Upgrades
+        for upgrade in &model.upgrades {
+            self.draw_collider(
+                &upgrade.collider,
+                self.assets.palette.upgrade,
+                &model.camera,
+                framebuffer,
+            );
+        }
+
         // Player
         self.draw_collider(
             &model.player.body.collider,
@@ -88,6 +98,7 @@ impl GameRender {
                 ParticleKind::WallBlock => self.assets.palette.wall_block,
                 ParticleKind::Bounce => self.assets.palette.collision,
                 ParticleKind::Damage => self.assets.palette.damage,
+                ParticleKind::Upgrade => self.assets.palette.upgrade,
             };
             color.a = t;
             self.draw_collider_transformed(

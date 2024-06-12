@@ -37,7 +37,7 @@ Config(
             acceleration: 5.0,
             shape: Circle( radius: 0.5 ),
             ai: Shooter (
-                preferred_distance: 3.0,
+                preferred_distance: 10.0,
                 charge: ( value: 0.0, min: 0.0, max: 1.5 ),
                 bullet: EnemyConfig(
                     health: 5.0,

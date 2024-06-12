@@ -34,6 +34,7 @@ pub struct Palette {
     pub dash: Rgba<f32>,
     pub damage: Rgba<f32>,
     pub collision: Rgba<f32>,
+    pub upgrade: Rgba<f32>,
 }
 
 #[derive(geng::asset::Load, Debug, Clone, Serialize, Deserialize)]

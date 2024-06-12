@@ -150,7 +150,24 @@ impl Model {
         }
     }
 
+    pub fn collect_upgrade(&mut self, upgrade: Upgrade) {
+        match upgrade.effect {
+            UpgradeEffect::Width => self.player.stats.dash.width += r32(0.5),
+            UpgradeEffect::Range => self.player.stats.dash.max_distance += r32(3.0),
+            UpgradeEffect::Damage => self.player.stats.dash.damage += r32(5.0),
+        };
+        self.particles_queue.push(SpawnParticles {
+            kind: ParticleKind::Upgrade,
+            distribution: ParticleDistribution::Circle {
+                center: upgrade.collider.position,
+                radius: upgrade.collider.compute_aabb().size().len(),
+            },
+            ..default()
+        });
+    }
+
     pub fn check_deaths(&mut self, delta_time: Time) {
+        let in_battle = !self.enemies.is_empty();
         self.enemies.retain(|enemy| {
             let alive = enemy.health.is_above_min();
             if !alive {
@@ -158,6 +175,9 @@ impl Model {
             }
             alive
         });
+        if in_battle && self.enemies.is_empty() && self.player.health.is_above_min() {
+            self.finish_battle();
+        }
 
         self.particles.retain(|_, particle| {
             particle.lifetime.change(-delta_time);
@@ -165,6 +185,35 @@ impl Model {
         });
         let spawn = self.particles_queue.drain(..).flat_map(spawn_particles);
         self.particles.extend(spawn);
+    }
+
+    pub fn finish_battle(&mut self) {
+        let Some((_, room)) = self
+            .rooms
+            .iter()
+            .find(|(_, room)| room.area.contains(self.player.body.collider.position))
+        else {
+            return;
+        };
+        let offset = if room.area.size().aspect() > r32(0.5) {
+            vec2(2.5, 0.0).as_r32()
+        } else {
+            vec2(0.0, 2.5).as_r32()
+        };
+
+        let options = [
+            UpgradeEffect::Width,
+            UpgradeEffect::Range,
+            UpgradeEffect::Damage,
+        ];
+        let upgrades = options.iter().enumerate().map(|(i, effect)| Upgrade {
+            collider: Collider::new(
+                room.area.center() + offset * r32(i as f32 - (options.len() as f32 - 1.0) / 2.0),
+                Shape::circle(0.5),
+            ),
+            effect: effect.clone(),
+        });
+        self.upgrades.extend(upgrades);
     }
 
     pub fn ai(&mut self, delta_time: Time) {
@@ -194,7 +243,7 @@ impl Model {
                             .push(Enemy::new((**bullet).clone(), enemy.body.collider.position));
                     }
 
-                    let target = enemy.body.collider.position
+                    let target = self.player.body.collider.position
                         + (enemy.body.collider.position - self.player.body.collider.position)
                             .normalize_or_zero()
                             * *preferred_distance;
@@ -234,6 +283,23 @@ impl Model {
                 });
                 self.events.push(Event::Sound(SoundEvent::Hit));
             }
+        }
+
+        // Upgrades
+        let mut collected_idx = Vec::new();
+        for (i, upgrade) in self.upgrades.iter().enumerate() {
+            let Some(delta) = delta_to_chain(upgrade.collider.position, &drawing.points_smoothed)
+            else {
+                continue;
+            };
+            if delta.len() < width {
+                collected_idx.push((i, delta.len()));
+            }
+        }
+        if let Some((i, _)) = collected_idx.into_iter().min_by_key(|(_, d)| *d) {
+            let collected = self.upgrades.swap_remove(i);
+            self.collect_upgrade(collected);
+            self.upgrades.clear();
         }
 
         self.particles_queue.push(SpawnParticles {
