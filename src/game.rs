@@ -8,6 +8,8 @@ pub struct GameState {
     cursor: CursorState,
     render: GameRender,
     model: Model,
+    drawing_sfx: geng::SoundEffect,
+    volume: f32,
 }
 
 #[derive(Debug, Clone)]
@@ -29,6 +31,12 @@ impl GameState {
             },
             render: GameRender::new(geng, assets),
             model: Model::new(assets.config.clone()),
+            drawing_sfx: {
+                let mut sfx = assets.sounds.drawing.play();
+                sfx.set_volume(0.0);
+                sfx
+            },
+            volume: 0.5,
         }
     }
 
@@ -57,6 +65,11 @@ impl GameState {
             drawing,
         }
     }
+
+    fn play_sfx(&self, sfx: &geng::Sound) {
+        let mut sfx = sfx.play();
+        sfx.set_volume(self.volume);
+    }
 }
 
 impl geng::State for GameState {
@@ -78,6 +91,35 @@ impl geng::State for GameState {
 
         let input = self.get_controls();
         self.model.update(input, delta_time);
+
+        let mut drawing = false;
+        let mut hit = false;
+        let mut kill = false;
+        for event in std::mem::take(&mut self.model.events) {
+            match event {
+                Event::Sound(sfx) => match sfx {
+                    SoundEvent::Drawing => drawing = true,
+                    SoundEvent::Hit => hit = true,
+                    SoundEvent::Kill => kill = true,
+                    SoundEvent::HitSelf => {
+                        self.play_sfx(&self.assets.sounds.hit_self);
+                    }
+                    SoundEvent::Bounce => {
+                        self.play_sfx(&self.assets.sounds.bounce);
+                    }
+                    SoundEvent::Expand => {
+                        self.play_sfx(&self.assets.sounds.expand);
+                    }
+                },
+            }
+        }
+        if kill {
+            self.play_sfx(&self.assets.sounds.kill);
+        } else if hit {
+            self.play_sfx(&self.assets.sounds.hit);
+        }
+        self.drawing_sfx
+            .set_volume(if drawing { 1.0 } else { 0.0 } * self.volume);
     }
 
     fn handle_event(&mut self, event: geng::Event) {

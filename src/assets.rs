@@ -5,6 +5,18 @@ pub struct Assets {
     pub controls: Controls,
     pub config: Config,
     pub palette: Palette,
+    pub sounds: Sounds,
+}
+
+#[derive(geng::asset::Load)]
+pub struct Sounds {
+    #[load(options(looped = "true"))]
+    pub drawing: geng::Sound,
+    pub hit: geng::Sound,
+    pub kill: geng::Sound,
+    pub hit_self: geng::Sound,
+    pub bounce: geng::Sound,
+    pub expand: geng::Sound,
 }
 
 #[derive(geng::asset::Load, Debug, Clone, Serialize, Deserialize)]

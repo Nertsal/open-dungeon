@@ -9,6 +9,10 @@ impl Model {
         self.real_time += delta_time;
         self.game_time += delta_time;
 
+        if self.player.draw_action.is_some() {
+            self.events.push(Event::Sound(SoundEvent::Drawing));
+        }
+
         self.controls(input, delta_time);
         self.ai(delta_time);
         self.collisions(delta_time);
@@ -55,6 +59,10 @@ impl Model {
         let player = &mut self.player;
         for object in &self.objects {
             if let Some(collision) = player.body.collider.collide(&object.collider) {
+                if player.body.velocity.len_sqr() > r32(1.0) {
+                    self.events.push(Event::Sound(SoundEvent::Bounce));
+                }
+
                 player.body.collider.position -= collision.normal * collision.penetration;
                 player.body.velocity -=
                     collision.normal * vec2::dot(player.body.velocity, collision.normal);
@@ -94,6 +102,9 @@ impl Model {
                     },
                     ..default()
                 });
+                if rel_vel.len_sqr() > r32(1.0) {
+                    self.events.push(Event::Sound(SoundEvent::Bounce));
+                }
             }
         }
 
@@ -101,6 +112,10 @@ impl Model {
         let player = &mut self.player;
         for room in &self.room_colliders {
             if let Some(collision) = player.body.collider.collide(room) {
+                if player.body.velocity.len_sqr() > r32(1.0) {
+                    self.events.push(Event::Sound(SoundEvent::Bounce));
+                }
+
                 let bounciness = r32(0.8);
                 player.body.collider.position -= collision.normal * collision.penetration;
                 player.body.velocity -= collision.normal
@@ -110,6 +125,10 @@ impl Model {
 
             for enemy in &mut self.enemies {
                 if let Some(collision) = enemy.body.collider.collide(room) {
+                    if enemy.body.velocity.len_sqr() > r32(1.0) {
+                        self.events.push(Event::Sound(SoundEvent::Bounce));
+                    }
+
                     let bounciness = r32(0.8);
                     enemy.body.collider.position -= collision.normal * collision.penetration;
                     enemy.body.velocity -= collision.normal
@@ -121,7 +140,13 @@ impl Model {
     }
 
     pub fn check_deaths(&mut self, delta_time: Time) {
-        self.enemies.retain(|enemy| enemy.health.is_above_min());
+        self.enemies.retain(|enemy| {
+            let alive = enemy.health.is_above_min();
+            if !alive {
+                self.events.push(Event::Sound(SoundEvent::Kill));
+            }
+            alive
+        });
 
         self.particles.retain(|_, particle| {
             particle.lifetime.change(-delta_time);
@@ -174,6 +199,7 @@ impl Model {
                     },
                     ..default()
                 });
+                self.events.push(Event::Sound(SoundEvent::Hit));
             }
         }
 
@@ -365,6 +391,7 @@ impl Model {
         });
         self.update_room_colliders();
         self.spawn_enemies(new_room);
+        self.events.push(Event::Sound(SoundEvent::Expand));
     }
 
     pub fn spawn_enemies(&mut self, room_idx: Index) {

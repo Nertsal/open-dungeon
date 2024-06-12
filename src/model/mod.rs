@@ -28,6 +28,22 @@ pub struct Model {
     pub particles: Arena<Particle>,
 
     pub particles_queue: Vec<SpawnParticles>,
+    pub events: Vec<Event>,
+}
+
+#[derive(Debug)]
+pub enum Event {
+    Sound(SoundEvent),
+}
+
+#[derive(Debug)]
+pub enum SoundEvent {
+    Drawing,
+    Hit,
+    Kill,
+    HitSelf,
+    Bounce,
+    Expand,
 }
 
 #[derive(Debug, Clone)]
@@ -147,6 +163,7 @@ impl Model {
             particles: Arena::new(),
 
             particles_queue: Vec::new(),
+            events: Vec::new(),
 
             config,
         };

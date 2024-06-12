@@ -46,20 +46,24 @@ impl Model {
                     let last = drawing
                         .points_raw
                         .last()
-                        .expect("drawing has to have at least one starting point");
+                        .expect("drawing has to have a starting point");
                     // Clamp max dash distance
                     point.position =
                         last.position + (point.position - last.position).clamp_len(..=remaining);
                     drawing.points_raw.push(point);
 
                     // Update smooth
-                    let points = drawing
+                    let points: Vec<_> = drawing
                         .points_raw
                         .iter()
                         .map(|point| point.position.as_f32())
                         .dedup_by(|a, b| (*a - *b).len_sqr() < 0.01)
                         .collect();
-                    let chain = CardinalSpline::new(points, 0.5).chain(3);
+                    let chain = if points.len() < 3 {
+                        Chain::new(points)
+                    } else {
+                        CardinalSpline::new(points, 0.5).chain(3)
+                    };
                     drawing.points_smoothed =
                         chain.vertices.into_iter().map(|pos| pos.as_r32()).collect();
                 }
