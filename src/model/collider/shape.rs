@@ -4,6 +4,7 @@ use super::*;
 pub enum Shape {
     Circle { radius: Coord },
     Rectangle { width: Coord, height: Coord },
+    Triangle { height: Coord },
 }
 
 impl Shape {
@@ -39,6 +40,14 @@ impl Shape {
                 });
                 // All rectangles are convex
                 Box::new(parry2d::shape::ConvexPolygon::from_convex_hull(&points).unwrap())
+            }
+            Shape::Triangle { height } => {
+                let height = height.as_f32();
+                let base = height * 2.0 / 3.0.sqrt();
+                let a = parry2d::math::Point::new(-base / 2.0, -height / 3.0);
+                let b = parry2d::math::Point::new(base / 2.0, -height / 3.0);
+                let c = parry2d::math::Point::new(0.0, height * 2.0 / 3.0);
+                Box::new(parry2d::shape::Triangle::new(a, b, c))
             }
         }
     }

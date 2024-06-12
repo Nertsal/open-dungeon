@@ -15,7 +15,9 @@ impl Model {
                 .clamp_len(..=player.stats.acceleration * delta_time);
         }
         player.body.collider.position += player.body.velocity * delta_time;
-        player.body.collider.rotation += player.body.angular_velocity * delta_time;
+        // player.body.collider.rotation += player.body.angular_velocity * delta_time;
+        player.body.collider.rotation = (self.cursor_pos - player.body.collider.position).arg()
+            + Angle::from_degrees(30.0).map(r32);
 
         match input.drawing {
             Some(position) => {

@@ -193,7 +193,7 @@ impl Model {
 
             player: Player {
                 health: Health::new_max(config.player.health),
-                body: PhysicsBody::new(vec2::ZERO, Shape::circle(0.5)),
+                body: PhysicsBody::new(vec2::ZERO, config.player.shape),
                 stats: config.player.clone(),
                 draw_action: None,
             },

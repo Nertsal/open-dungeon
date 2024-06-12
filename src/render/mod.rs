@@ -154,6 +154,27 @@ impl GameRender {
                     transform,
                 );
             }
+            Shape::Triangle { height } => {
+                let height = height.as_f32();
+                let base = height * 2.0 / 3.0.sqrt();
+                let a = vec2(-base / 2.0, -height / 3.0);
+                let b = vec2(base / 2.0, -height / 3.0);
+                let c = vec2(0.0, height * 2.0 / 3.0);
+                let vertices: Vec<_> = [a, b, c]
+                    .into_iter()
+                    .map(|pos| {
+                        pos.rotate(collider.rotation.map(Coord::as_f32))
+                            + collider.position.as_f32()
+                    })
+                    .collect();
+                self.geng.draw2d().draw(
+                    framebuffer,
+                    camera,
+                    &vertices,
+                    color,
+                    ugli::DrawMode::Triangles,
+                );
+            }
         }
     }
 

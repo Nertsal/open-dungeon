@@ -61,6 +61,7 @@ pub struct PlayerConfig {
     pub speed: Coord,
     pub acceleration: Coord,
     pub dash: DashConfig,
+    pub shape: Shape,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
