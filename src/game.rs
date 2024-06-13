@@ -116,15 +116,10 @@ impl geng::State for GameState {
                     SoundEvent::Drawing => drawing = true,
                     SoundEvent::Hit => hit = true,
                     SoundEvent::Kill => kill = true,
-                    SoundEvent::HitSelf => {
-                        self.play_sfx(&self.assets.sounds.hit_self);
-                    }
-                    SoundEvent::Bounce => {
-                        self.play_sfx(&self.assets.sounds.bounce);
-                    }
-                    SoundEvent::Expand => {
-                        self.play_sfx(&self.assets.sounds.expand);
-                    }
+                    SoundEvent::HitSelf => self.play_sfx(&self.assets.sounds.hit_self),
+                    SoundEvent::Bounce => self.play_sfx(&self.assets.sounds.bounce),
+                    SoundEvent::Expand => self.play_sfx(&self.assets.sounds.expand),
+                    SoundEvent::Minigun => self.play_sfx(&self.assets.sounds.minigun),
                 },
             }
         }

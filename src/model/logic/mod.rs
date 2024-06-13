@@ -131,6 +131,10 @@ impl Model {
                 enemy.body.collider.position += correction * enemy_t;
                 enemy.body.velocity += bounce * enemy_t;
 
+                if let EnemyAI::Bullet = enemy.ai {
+                    enemy.health.set_ratio(Hp::ZERO);
+                }
+
                 self.particles_queue.push(SpawnParticles {
                     kind: ParticleKind::Bounce,
                     distribution: ParticleDistribution::Circle {
@@ -168,6 +172,10 @@ impl Model {
                     if projection > r32(1.0) {
                         self.events.push(Event::Sound(SoundEvent::Bounce));
                     }
+
+                    if let EnemyAI::Bullet = enemy.ai {
+                        enemy.health.set_ratio(Hp::ZERO);
+                    }
                 }
             }
         }
@@ -204,7 +212,18 @@ impl Model {
             if !alive {
                 self.score += (enemy.stats.score.unwrap_or(0) as f32
                     * self.score_multiplier.as_f32()) as Score;
-                self.events.push(Event::Sound(SoundEvent::Kill));
+                if let EnemyAI::Bullet = enemy.ai {
+                    self.particles_queue.push(SpawnParticles {
+                        kind: ParticleKind::Bounce,
+                        distribution: ParticleDistribution::Circle {
+                            center: enemy.body.collider.position,
+                            radius: r32(0.3),
+                        },
+                        ..default()
+                    });
+                } else {
+                    self.events.push(Event::Sound(SoundEvent::Kill));
+                }
             }
             alive
         });
@@ -273,6 +292,9 @@ impl Model {
                 EnemyAI::Idle => {
                     let drag = r32(0.9);
                     enemy.body.velocity *= drag;
+                    enemy.move_rotation();
+                }
+                EnemyAI::Bullet => {
                     enemy.move_rotation();
                 }
                 EnemyAI::Crawler => {
@@ -427,36 +449,77 @@ impl Model {
                         .iter()
                         .find(|(_, room)| room.area.contains(enemy.body.collider.position))
                     {
-                        // Oscilate
-                        helicopter.oscilate.change(-delta_time);
-                        if helicopter.oscilate.is_min() || helicopter.target.is_none() {
-                            helicopter.oscilate.set_ratio(Time::ONE);
-                            // Change target
-                            let points = room
-                                .area
-                                .extend_uniform(-r32(5.0))
-                                .corners()
-                                .into_iter()
-                                .filter(|pos| {
-                                    (*pos - enemy.body.collider.position).len_sqr() > r32(1.0)
-                                });
-                            if let Some(point) = points.choose(&mut rng) {
-                                helicopter.target = Some(point);
+                        match &mut helicopter.state {
+                            HelicopterState::Idle => {
+                                // Oscilate
+                                helicopter.oscilate.change(-delta_time);
+                                if helicopter.oscilate.is_min() {
+                                    helicopter.oscilate.set_ratio(Time::ONE);
+                                    // Change target
+                                    let points = room
+                                        .area
+                                        .extend_uniform(-r32(5.0))
+                                        .corners()
+                                        .into_iter()
+                                        .filter(|pos| {
+                                            (*pos - enemy.body.collider.position).len_sqr()
+                                                > r32(1.0)
+                                        });
+                                    if let Some(point) = points.choose(&mut rng) {
+                                        helicopter.state = HelicopterState::Moving(point);
+                                    }
+                                }
                             }
-                        }
+                            &mut HelicopterState::Moving(target) => {
+                                let delta = target - enemy.body.collider.position;
+                                if delta.len_sqr() < r32(1.0) {
+                                    if rng.gen_bool(0.3) {
+                                        // helicopter.state = HelicopterState::Minions { minions: , delay:  } ;
+                                    } else {
+                                        helicopter.state = HelicopterState::Minigun {
+                                            timer: r32(5.0),
+                                            shot_delay: Bounded::new_max(r32(0.2)),
+                                        };
+                                    }
+                                    continue;
+                                }
 
-                        // Move to target
-                        if let Some(target) = helicopter.target {
-                            let delta = target - enemy.body.collider.position;
-                            let target_velocity = delta.clamp_len(..=enemy.stats.speed);
-                            let acc =
-                                if vec2::dot(target_velocity, enemy.body.velocity) < Coord::ZERO {
+                                let target_velocity = delta.clamp_len(..=enemy.stats.speed);
+                                let acc = if vec2::dot(target_velocity, enemy.body.velocity)
+                                    < Coord::ZERO
+                                {
                                     enemy.stats.acceleration * r32(2.0)
                                 } else {
                                     enemy.stats.acceleration
                                 };
-                            enemy.body.velocity += (target_velocity - enemy.body.velocity)
-                                .clamp_len(..=acc * delta_time);
+                                enemy.body.velocity += (target_velocity - enemy.body.velocity)
+                                    .clamp_len(..=acc * delta_time);
+                            }
+                            HelicopterState::Minigun { timer, shot_delay } => {
+                                // Shoot
+                                shot_delay.change(-delta_time);
+                                if shot_delay.is_min() {
+                                    shot_delay.set_ratio(Time::ONE);
+
+                                    let mut bullet = Enemy::new(
+                                        (*helicopter.minigun_bullet).clone(),
+                                        enemy.body.collider.position,
+                                    );
+                                    let dir = (self.player.body.collider.position
+                                        - enemy.body.collider.position)
+                                        .normalize_or_zero();
+                                    bullet.body.velocity = dir * bullet.stats.speed;
+                                    self.spawn_queue.push(bullet);
+                                    self.events.push(Event::Sound(SoundEvent::Minigun));
+                                }
+
+                                // Update timer
+                                *timer -= delta_time;
+                                if *timer <= Time::ZERO {
+                                    helicopter.state = HelicopterState::Idle;
+                                }
+                            }
+                            HelicopterState::Minions { minions, delay } => todo!(),
                         }
                     }
                 }

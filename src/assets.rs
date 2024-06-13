@@ -18,6 +18,7 @@ pub struct Sounds {
     pub hit_self: geng::Sound,
     pub bounce: geng::Sound,
     pub expand: geng::Sound,
+    pub minigun: geng::Sound,
 }
 
 #[derive(geng::asset::Load)]

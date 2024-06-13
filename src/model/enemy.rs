@@ -28,6 +28,7 @@ impl Enemy {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum EnemyAI {
     Idle,
+    Bullet,
     Crawler,
     Shooter {
         preferred_distance: Coord,
@@ -81,14 +82,39 @@ pub struct Pacman1Up {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct HelicopterAI {
     pub oscilate: Bounded<Time>,
-    pub target: Option<Position>,
+    pub state: HelicopterState,
+    pub minigun_bullet: Box<EnemyConfig>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub enum HelicopterState {
+    Idle,
+    Moving(Position),
+    Minigun {
+        timer: Time,
+        shot_delay: Bounded<Time>,
+    },
+    Minions {
+        minions: Vec<EnemyConfig>,
+        delay: Bounded<Time>,
+    },
 }
 
 impl Default for HelicopterAI {
     fn default() -> Self {
         Self {
-            oscilate: Bounded::new_max(r32(7.0)),
-            target: None,
+            oscilate: Bounded::new_zero(r32(7.0)),
+            state: HelicopterState::Idle,
+            minigun_bullet: Box::new(EnemyConfig {
+                cost: None,
+                score: None,
+                health: r32(1.0),
+                damage: r32(5.0),
+                speed: r32(15.0),
+                acceleration: r32(100.0),
+                shape: Shape::circle(0.2),
+                ai: EnemyAI::Bullet,
+            }),
         }
     }
 }

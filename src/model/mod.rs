@@ -55,6 +55,7 @@ pub enum SoundEvent {
     HitSelf,
     Bounce,
     Expand,
+    Minigun,
 }
 
 #[derive(Debug, Clone)]
