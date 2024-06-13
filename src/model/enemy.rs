@@ -10,9 +10,11 @@ pub struct Enemy {
 
 impl Enemy {
     pub fn new(config: EnemyConfig, position: Position) -> Self {
+        let mut body = PhysicsBody::new(position, config.shape);
+        body.mass = config.mass.unwrap_or(R32::ONE);
         Self {
             health: Bounded::new_max(config.health),
-            body: PhysicsBody::new(position, config.shape),
+            body,
             ai: config.ai.clone(),
             stats: config,
         }
@@ -108,6 +110,7 @@ impl Default for HelicopterAI {
             minigun_bullet: Box::new(EnemyConfig {
                 cost: None,
                 score: None,
+                mass: None,
                 health: r32(1.0),
                 damage: r32(5.0),
                 speed: r32(15.0),

@@ -137,6 +137,7 @@ pub enum UpgradeEffect {
 #[derive(Debug, Clone)]
 pub struct PhysicsBody {
     pub collider: Collider,
+    pub mass: R32,
     pub velocity: vec2<Coord>,
     pub angular_velocity: Angle<R32>,
 }
@@ -145,6 +146,7 @@ impl PhysicsBody {
     pub fn new(position: Position, shape: Shape) -> Self {
         Self {
             collider: Collider::new(position, shape),
+            mass: R32::ONE,
             velocity: vec2::ZERO,
             angular_velocity: Angle::ZERO,
         }

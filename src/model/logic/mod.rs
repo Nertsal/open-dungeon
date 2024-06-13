@@ -99,7 +99,7 @@ impl Model {
                 let player_t = if player.draw_action.is_some() {
                     r32(0.0)
                 } else {
-                    r32(0.5)
+                    enemy.body.mass / (enemy.body.mass + player.body.mass)
                 };
                 let enemy_t = R32::ONE - player_t;
 
@@ -478,6 +478,7 @@ impl Model {
                                         let tank = EnemyConfig {
                                             cost: None,
                                             score: Some(200),
+                                            mass: None,
                                             health: r32(23.0),
                                             damage: r32(10.0),
                                             speed: r32(2.0),
@@ -488,6 +489,7 @@ impl Model {
                                         let circle = EnemyConfig {
                                             cost: None,
                                             score: Some(50),
+                                            mass: None,
                                             health: r32(6.0),
                                             damage: r32(5.0),
                                             speed: r32(3.0),

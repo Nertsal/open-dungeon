@@ -113,6 +113,7 @@ pub struct PlayerConfig {
 pub struct EnemyConfig {
     pub cost: Option<R32>,
     pub score: Option<Score>,
+    pub mass: Option<R32>,
     pub health: Hp,
     pub damage: Hp,
     pub speed: Coord,
