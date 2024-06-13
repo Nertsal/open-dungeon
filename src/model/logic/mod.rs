@@ -273,6 +273,7 @@ impl Model {
                 EnemyAI::Idle => {
                     let drag = r32(0.9);
                     enemy.body.velocity *= drag;
+                    enemy.move_rotation();
                 }
                 EnemyAI::Crawler => {
                     let target = self.player.body.collider.position;
@@ -281,6 +282,7 @@ impl Model {
                         * enemy.stats.speed;
                     enemy.body.velocity += (target_velocity - enemy.body.velocity)
                         .clamp_len(..=enemy.stats.acceleration * delta_time);
+                    enemy.move_rotation();
                 }
                 EnemyAI::Shooter {
                     preferred_distance,
@@ -309,6 +311,7 @@ impl Model {
                         * enemy.stats.speed;
                     enemy.body.velocity += (target_velocity - enemy.body.velocity)
                         .clamp_len(..=enemy.stats.acceleration * delta_time);
+                    enemy.move_rotation();
                 }
                 EnemyAI::Pacman { pacman } => match &mut pacman.state {
                     PacmanState::Normal { spawn_1up, target } => {
