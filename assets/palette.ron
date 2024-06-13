@@ -14,4 +14,5 @@ Palette(
     damage: "#b52d6d",
     collision: "#eaf257",
     upgrade: "#19705a",
+    pacman_1up: "#2dad6b",
 )

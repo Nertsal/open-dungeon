@@ -14,13 +14,13 @@ impl Shape {
         }
     }
 
-    pub fn square<T: Float>(size: T) -> Self {
-        let size = size.as_r32();
-        Self::Rectangle {
-            width: size,
-            height: size,
-        }
-    }
+    // pub fn square<T: Float>(size: T) -> Self {
+    //     let size = size.as_r32();
+    //     Self::Rectangle {
+    //         width: size,
+    //         height: size,
+    //     }
+    // }
 
     pub fn rectangle<T: Float, U: Float>(width: T, height: U) -> Self {
         Self::Rectangle {

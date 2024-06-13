@@ -1,8 +1,9 @@
 mod collider;
+mod enemy;
 mod logic;
 mod particles;
 
-pub use self::{collider::*, particles::*};
+pub use self::{collider::*, enemy::*, particles::*};
 
 use crate::prelude::*;
 
@@ -32,6 +33,8 @@ pub struct Model {
     pub enemies: Vec<Enemy>,
     pub upgrades: Vec<Upgrade>,
     pub particles: Arena<Particle>,
+
+    pub pacman_1ups: Vec<Pacman1Up>,
 
     pub particles_queue: Vec<SpawnParticles>,
     pub spawn_queue: Vec<Enemy>,
@@ -146,36 +149,6 @@ impl PhysicsBody {
 }
 
 #[derive(Debug, Clone)]
-pub struct Enemy {
-    pub health: Health,
-    pub body: PhysicsBody,
-    pub stats: EnemyConfig,
-    pub ai: EnemyAI,
-}
-
-impl Enemy {
-    pub fn new(config: EnemyConfig, position: Position) -> Self {
-        Self {
-            health: Bounded::new_max(config.health),
-            body: PhysicsBody::new(position, config.shape),
-            ai: config.ai.clone(),
-            stats: config,
-        }
-    }
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub enum EnemyAI {
-    Idle,
-    Crawler,
-    Shooter {
-        preferred_distance: Coord,
-        charge: Bounded<Time>,
-        bullet: Box<EnemyConfig>,
-    },
-}
-
-#[derive(Debug, Clone)]
 pub struct Player {
     pub health: Health,
     pub body: PhysicsBody,
@@ -247,6 +220,8 @@ impl Model {
             enemies: Vec::new(),
             upgrades: Vec::new(),
             particles: Arena::new(),
+
+            pacman_1ups: Vec::new(),
 
             particles_queue: Vec::new(),
             spawn_queue: Vec::new(),

@@ -254,6 +254,8 @@ impl Model {
     }
 
     pub fn ai(&mut self, delta_time: Time) {
+        let mut rng = thread_rng();
+
         for enemy in &mut self.enemies {
             match &mut enemy.ai {
                 EnemyAI::Idle => {
@@ -296,6 +298,107 @@ impl Model {
                     enemy.body.velocity += (target_velocity - enemy.body.velocity)
                         .clamp_len(..=enemy.stats.acceleration * delta_time);
                 }
+                EnemyAI::Pacman { pacman } => match &mut pacman.state {
+                    PacmanState::Normal { spawn_1up, target } => {
+                        if let Some((_, room)) = self
+                            .rooms
+                            .iter()
+                            .find(|(_, room)| room.area.contains(enemy.body.collider.position))
+                        {
+                            // Move to the target
+                            let target = match *target {
+                                Some(target)
+                                    if (target - enemy.body.collider.position).len_sqr()
+                                        > r32(100.0) =>
+                                {
+                                    target
+                                }
+                                _ => {
+                                    // Change target
+                                    if let Some(up) = self.pacman_1ups.iter().choose(&mut rng) {
+                                        *target = Some(up.collider.position);
+                                    } else {
+                                        for _ in 0..10 {
+                                            let position = vec2(
+                                                rng.gen_range(room.area.min.x..=room.area.max.x),
+                                                rng.gen_range(room.area.min.y..=room.area.max.y),
+                                            );
+                                            if (enemy.body.collider.position - position).len_sqr()
+                                                > r32(100.0)
+                                            {
+                                                *target = Some(position);
+                                                break;
+                                            }
+                                        }
+                                    }
+                                    target.unwrap_or(self.player.body.collider.position)
+                                }
+                            };
+                            let delta = target - enemy.body.collider.position;
+                            enemy.body.velocity = if delta.x.abs() > delta.y.abs() {
+                                vec2(delta.x.signum(), Coord::ZERO) * enemy.stats.speed
+                            } else {
+                                vec2(Coord::ZERO, delta.y.signum()) * enemy.stats.speed
+                            };
+                            enemy.body.angular_velocity = Angle::ZERO;
+                            enemy.body.collider.rotation = enemy.body.velocity.arg();
+
+                            // Spawn 1up
+                            spawn_1up.change(-delta_time);
+                            if spawn_1up.is_min() {
+                                spawn_1up.set_ratio(Time::ONE);
+
+                                let target = room.area.center()
+                                    + (room.area.center() - enemy.body.collider.position)
+                                        .map(Coord::signum)
+                                        * (room.area.size() / r32(2.0) - vec2(10.0, 10.0).as_r32());
+                                for _ in 0..10 {
+                                    let position = rng.gen_circle(target, r32(3.0));
+                                    if self.pacman_1ups.iter().any(|up| {
+                                        (up.collider.position - position).len_sqr() < r32(16.0)
+                                    }) {
+                                        continue;
+                                    }
+                                    self.pacman_1ups.push(Pacman1Up {
+                                        collider: Collider::new(position, Shape::circle(0.5)),
+                                    });
+                                }
+                            }
+
+                            // Eat 1up
+                            self.pacman_1ups.retain(|up| {
+                                let eat = up.collider.check(&enemy.body.collider);
+                                if eat {
+                                    pacman.state = PacmanState::Power {
+                                        timer: Bounded::new_max(r32(7.5)),
+                                    };
+                                }
+                                !eat
+                            })
+                        }
+                    }
+                    PacmanState::Power { timer } => {
+                        // Chase the player
+                        let target =
+                            self.player.body.collider.position - enemy.body.collider.position;
+                        enemy.body.velocity = if target.x.abs() > target.y.abs() {
+                            vec2(target.x.signum(), Coord::ZERO) * pacman.speed_power
+                        } else {
+                            vec2(Coord::ZERO, target.y.signum()) * pacman.speed_power
+                        };
+                        enemy.body.angular_velocity = Angle::ZERO;
+                        enemy.body.collider.rotation = enemy.body.velocity.arg();
+
+                        // Update timer
+                        timer.change(-delta_time);
+                        if timer.is_min() {
+                            pacman.state = PacmanState::Normal {
+                                spawn_1up: Bounded::new_max(r32(7.0)),
+                                target: None,
+                            };
+                        }
+                    }
+                },
             }
 
             enemy.body.collider.position += enemy.body.velocity * delta_time;
@@ -488,12 +591,27 @@ impl Model {
         // }
 
         room.expanded_direction = Some(closest);
-        let mut gen = || {
-            (r32(rng.gen_range(15.0..=25.0))
-                + self.config.difficulty.room_size_scaling * self.difficulty)
-                .min(self.config.difficulty.room_size_max)
+
+        let size = if let Some(boss) = self
+            .config
+            .bosses
+            .iter()
+            .find(|boss| boss.room == self.rooms_cleared + 1)
+        {
+            // Boss room
+            log::debug!("Generating boss room...");
+            boss.room_size
+        } else {
+            // Normal room
+            log::debug!("Generating next room...");
+            let mut gen = || {
+                (r32(rng.gen_range(15.0..=25.0))
+                    + self.config.difficulty.room_size_scaling * self.difficulty)
+                    .min(self.config.difficulty.room_size_max)
+            };
+            vec2(gen(), gen()).as_r32()
         };
-        let size = vec2(gen(), gen()).as_r32();
+
         let new_room = match closest {
             Direction::Left => Aabb2::point(vec2(room.area.min.x, room.area.center().y))
                 .extend_left(size.x)
@@ -526,13 +644,8 @@ impl Model {
 
         let mut rng = thread_rng();
         let mut difficulty = self.difficulty;
-        while let Some(config) = self
-            .config
-            .enemies
-            .iter()
-            .filter(|config| config.cost.map_or(false, |cost| cost <= difficulty))
-            .choose(&mut rng)
-        {
+
+        let mut spawn_enemy = |config: &EnemyConfig, difficulty: &mut R32, rng: &mut ThreadRng| {
             for _ in 0..50 {
                 let position = vec2(
                     rng.gen_range(room.area.min.x..=room.area.max.x),
@@ -542,7 +655,7 @@ impl Model {
                     continue;
                 }
 
-                difficulty -= config.cost.unwrap_or(R32::ZERO);
+                *difficulty -= config.cost.unwrap_or(R32::ZERO);
                 self.enemies.push(Enemy::new(
                     EnemyConfig {
                         health: config.health
@@ -553,12 +666,46 @@ impl Model {
                 ));
                 break;
             }
+        };
+
+        if let Some(boss) = self
+            .config
+            .bosses
+            .iter()
+            .find(|boss| boss.room == self.rooms_cleared + 1)
+        {
+            // Boss room
+            for enemy in &boss.enemies {
+                spawn_enemy(enemy, &mut difficulty, &mut rng);
+            }
+            return;
+        }
+
+        while let Some(config) = self
+            .config
+            .enemies
+            .iter()
+            .filter(|config| config.cost.map_or(false, |cost| cost <= difficulty))
+            .choose(&mut rng)
+        {
+            spawn_enemy(config, &mut difficulty, &mut rng);
         }
     }
 
     pub fn compress_rooms(&mut self, delta_time: Time) {
         if self.can_expand() {
             // Pause for expansion
+            return;
+        }
+
+        if self.rooms.len() == 1
+            && self
+                .config
+                .bosses
+                .iter()
+                .any(|boss| boss.room == self.rooms_cleared + 1)
+        {
+            // Dont compress the boss room
             return;
         }
 

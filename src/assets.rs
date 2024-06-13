@@ -51,6 +51,7 @@ pub struct Palette {
     pub damage: Rgba<f32>,
     pub collision: Rgba<f32>,
     pub upgrade: Rgba<f32>,
+    pub pacman_1up: Rgba<f32>,
 }
 
 #[derive(geng::asset::Load, Debug, Clone, Serialize, Deserialize)]
@@ -72,6 +73,7 @@ pub struct Config {
     pub score: ScoreConfig,
     pub player: PlayerConfig,
     pub enemies: Vec<EnemyConfig>,
+    pub bosses: Vec<BossConfig>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -119,4 +121,11 @@ pub struct DashConfig {
     pub width: Coord,
     pub damage: Hp,
     pub invincibility_time: Time,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct BossConfig {
+    pub room: usize,
+    pub room_size: vec2<Coord>,
+    pub enemies: Vec<EnemyConfig>,
 }

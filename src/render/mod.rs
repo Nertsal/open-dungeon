@@ -64,6 +64,16 @@ impl GameRender {
             );
         }
 
+        // 1up
+        for up in &model.pacman_1ups {
+            self.draw_collider(
+                &up.collider,
+                self.assets.palette.pacman_1up,
+                &model.camera,
+                framebuffer,
+            );
+        }
+
         // Upgrades
         for upgrade in &model.upgrades {
             // self.draw_collider(

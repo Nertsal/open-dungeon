@@ -71,4 +71,21 @@ Config(
             ),
         ),
     ],
+    bosses: [
+        BossConfig(
+            room: 2,
+            room_size: ( 30.0, 30.0 ),
+            enemies: [
+                EnemyConfig(
+                    score: 4000,
+                    health: 100.0,
+                    damage: 20.0,
+                    speed: 5.0,
+                    acceleration: 100.0,
+                    shape: Circle ( radius: 1.0 ),
+                    ai: Pacman ( ),
+                ),
+            ],
+        ),
+    ]
 )
