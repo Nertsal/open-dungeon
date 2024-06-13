@@ -86,8 +86,14 @@ impl Model {
 
         // Player - Enemy collisions
         let player = &mut self.player;
+        let player_shield = Collider::new(player.body.collider.position, player.stats.shield);
         for enemy in &mut self.enemies {
-            if let Some(collision) = player.body.collider.collide(&enemy.body.collider) {
+            let (damage_mult, player_collider) = if player.invincibility.is_above_min() {
+                (Hp::ZERO, &player_shield)
+            } else {
+                (Hp::ONE, &player.body.collider)
+            };
+            if let Some(collision) = player_collider.collide(&enemy.body.collider) {
                 let correction = collision.normal * collision.penetration;
 
                 let player_t = if player.draw_action.is_some() {
@@ -105,6 +111,19 @@ impl Model {
 
                 player.body.collider.position -= correction * player_t;
                 player.body.velocity -= bounce * player_t;
+                let damage = enemy.stats.damage * damage_mult;
+                player.health.change(-damage);
+                if damage > Hp::ZERO {
+                    self.particles_queue.push(SpawnParticles {
+                        kind: ParticleKind::HitSelf,
+                        distribution: ParticleDistribution::Circle {
+                            center: player.body.collider.position,
+                            radius: r32(0.6),
+                        },
+                        ..default()
+                    });
+                    self.events.push(Event::Sound(SoundEvent::HitSelf));
+                }
 
                 enemy.body.collider.position += correction * enemy_t;
                 enemy.body.velocity += bounce * enemy_t;

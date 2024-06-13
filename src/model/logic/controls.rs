@@ -5,6 +5,20 @@ impl Model {
         let can_expand = self.can_expand();
         let player = &mut self.player;
 
+        // Invincibility
+        let invincible = player.invincibility.is_above_min();
+        player.invincibility.change(-delta_time);
+        if invincible && !player.invincibility.is_above_min() {
+            self.particles_queue.push(SpawnParticles {
+                kind: ParticleKind::Shield,
+                distribution: ParticleDistribution::Circle {
+                    center: player.body.collider.position,
+                    radius: r32(0.6),
+                },
+                ..default()
+            });
+        }
+
         // Movement
         if player.draw_action.is_some() {
             player.body.velocity = vec2::ZERO;
@@ -130,6 +144,7 @@ impl Model {
         self.player.body.collider.position = last;
         self.player.body.velocity =
             (last - prelast).normalize_or_zero() * self.config.player.dash.speed;
+        self.player.invincibility.set_ratio(Time::ONE);
 
         self.damage_around(
             drawing,

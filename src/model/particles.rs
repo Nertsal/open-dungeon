@@ -18,6 +18,8 @@ pub enum ParticleKind {
     Bounce,
     Damage,
     Upgrade,
+    HitSelf,
+    Shield,
 }
 
 #[derive(Debug, Clone)]

@@ -90,6 +90,19 @@ impl GameRender {
         }
 
         // Player
+        if model.player.invincibility.is_above_min() {
+            let shield = Collider::new(
+                model.player.body.collider.position,
+                model.player.stats.shield,
+            );
+            self.draw_outline(
+                &shield,
+                0.1,
+                self.assets.palette.enemy,
+                &model.camera,
+                framebuffer,
+            );
+        }
         self.draw_collider(
             &model.player.body.collider,
             self.assets.palette.player,
@@ -114,6 +127,8 @@ impl GameRender {
                 ParticleKind::Bounce => self.assets.palette.collision,
                 ParticleKind::Damage => self.assets.palette.damage,
                 ParticleKind::Upgrade => self.assets.palette.upgrade,
+                ParticleKind::HitSelf => self.assets.palette.player,
+                ParticleKind::Shield => self.assets.palette.enemy,
             };
             color.a = t;
             self.draw_collider_transformed(
@@ -272,5 +287,63 @@ impl GameRender {
         self.geng
             .draw2d()
             .quad(framebuffer, camera, fill, self.assets.palette.health);
+    }
+
+    pub fn draw_outline(
+        &self,
+        collider: &Collider,
+        outline_width: f32,
+        color: Rgba<f32>,
+        camera: &impl geng::AbstractCamera2d,
+        framebuffer: &mut ugli::Framebuffer,
+    ) {
+        match collider.shape {
+            Shape::Circle { radius } => {
+                self.geng.draw2d().draw2d(
+                    framebuffer,
+                    camera,
+                    &draw2d::Ellipse::circle_with_cut(
+                        collider.position.as_f32(),
+                        radius.as_f32() - outline_width,
+                        radius.as_f32(),
+                        color,
+                    ),
+                );
+            }
+            Shape::Rectangle { width, height } => {
+                let [a, b, c, d] = Aabb2::ZERO
+                    .extend_symmetric(vec2(width.as_f32(), height.as_f32()) / 2.0)
+                    .extend_uniform(-outline_width / 2.0)
+                    .corners();
+                let m = (a + b) / 2.0;
+                self.geng.draw2d().draw2d(
+                    framebuffer,
+                    camera,
+                    &draw2d::Chain::new(
+                        Chain::new(vec![m, b, c, d, a, m]),
+                        outline_width,
+                        color,
+                        1,
+                    )
+                    .rotate(collider.rotation.map(Coord::as_f32))
+                    .translate(collider.position.as_f32()),
+                );
+            }
+            Shape::Triangle { height } => {
+                let height = height.as_f32();
+                let base = height * 2.0 / 3.0.sqrt();
+                let a = vec2(-base / 2.0, -height / 3.0);
+                let b = vec2(base / 2.0, -height / 3.0);
+                let c = vec2(0.0, height * 2.0 / 3.0);
+                let m = (a + b) / 2.0;
+                self.geng.draw2d().draw2d(
+                    framebuffer,
+                    camera,
+                    &draw2d::Chain::new(Chain::new(vec![m, b, c, a, m]), outline_width, color, 1)
+                        .rotate(collider.rotation.map(Coord::as_f32))
+                        .translate(collider.position.as_f32()),
+                );
+            }
+        }
     }
 }

@@ -97,6 +97,7 @@ pub struct PlayerConfig {
     pub acceleration: Coord,
     pub dash: DashConfig,
     pub shape: Shape,
+    pub shield: Shape,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -104,6 +105,7 @@ pub struct EnemyConfig {
     pub cost: Option<R32>,
     pub score: Option<Score>,
     pub health: Hp,
+    pub damage: Hp,
     pub speed: Coord,
     pub acceleration: Coord,
     pub shape: Shape,
@@ -116,4 +118,5 @@ pub struct DashConfig {
     pub speed: Coord,
     pub width: Coord,
     pub damage: Hp,
+    pub invincibility_time: Time,
 }

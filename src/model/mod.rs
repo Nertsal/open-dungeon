@@ -180,6 +180,7 @@ pub struct Player {
     pub health: Health,
     pub body: PhysicsBody,
     pub stats: PlayerConfig,
+    pub invincibility: Bounded<Time>,
     pub draw_action: Option<Drawing>,
 }
 
@@ -237,6 +238,7 @@ impl Model {
                 health: Health::new_max(config.player.health),
                 body: PhysicsBody::new(vec2::ZERO, config.player.shape),
                 stats: config.player.clone(),
+                invincibility: Bounded::new_zero(config.player.dash.invincibility_time),
                 draw_action: None,
             },
             rooms,
