@@ -9,7 +9,7 @@ Config(
         room_exponent: 1.1,
         enemy_health_scaling: 0.5,
         room_size_scaling: 0.5,
-        room_size_max: 50.0,
+        room_size_max: 40.0,
     ),
     score: ScoreConfig(
         room_bonus: 1000,

@@ -136,8 +136,9 @@ impl GameRender {
                     );
                 }
                 _ => {
-                    self.draw_collider(
+                    self.draw_outline(
                         &enemy.body.collider,
+                        0.1,
                         self.assets.palette.enemy,
                         &model.camera,
                         framebuffer,
