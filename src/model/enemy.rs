@@ -58,7 +58,7 @@ impl Default for PacmanAI {
                 spawn_1up: Bounded::new_max(r32(5.0)),
                 target: None,
             },
-            speed_power: r32(10.0),
+            speed_power: r32(9.0),
         }
     }
 }

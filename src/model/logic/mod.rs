@@ -340,7 +340,10 @@ impl Model {
                                 }
                             };
                             let delta = target - enemy.body.collider.position;
-                            enemy.body.velocity = if delta.x.abs() > delta.y.abs() {
+                            enemy.body.velocity = if enemy.body.velocity.y == Coord::ZERO
+                                && delta.x.abs() > r32(0.1)
+                                || enemy.body.velocity.x == Coord::ZERO && delta.y.abs() < r32(0.1)
+                            {
                                 vec2(delta.x.signum(), Coord::ZERO) * enemy.stats.speed
                             } else {
                                 vec2(Coord::ZERO, delta.y.signum()) * enemy.stats.speed
@@ -375,21 +378,24 @@ impl Model {
                                 let eat = up.collider.check(&enemy.body.collider);
                                 if eat {
                                     pacman.state = PacmanState::Power {
-                                        timer: Bounded::new_max(r32(7.5)),
+                                        timer: Bounded::new_max(r32(5.0)),
                                     };
                                 }
                                 !eat
-                            })
+                            });
                         }
                     }
                     PacmanState::Power { timer } => {
                         // Chase the player
-                        let target =
+                        let delta =
                             self.player.body.collider.position - enemy.body.collider.position;
-                        enemy.body.velocity = if target.x.abs() > target.y.abs() {
-                            vec2(target.x.signum(), Coord::ZERO) * pacman.speed_power
+                        enemy.body.velocity = if enemy.body.velocity.y == Coord::ZERO
+                            && delta.x.abs() > r32(0.1)
+                            || enemy.body.velocity.x == Coord::ZERO && delta.y.abs() < r32(0.1)
+                        {
+                            vec2(delta.x.signum(), Coord::ZERO) * pacman.speed_power
                         } else {
-                            vec2(Coord::ZERO, target.y.signum()) * pacman.speed_power
+                            vec2(Coord::ZERO, delta.y.signum()) * pacman.speed_power
                         };
                         enemy.body.angular_velocity = Angle::ZERO;
                         enemy.body.collider.rotation = enemy.body.velocity.arg();

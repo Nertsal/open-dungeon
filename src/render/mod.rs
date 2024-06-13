@@ -50,12 +50,44 @@ impl GameRender {
 
         // Enemies
         for enemy in &model.enemies {
-            self.draw_collider(
-                &enemy.body.collider,
-                self.assets.palette.enemy,
-                &model.camera,
-                framebuffer,
-            );
+            if let EnemyAI::Pacman { pacman } = &enemy.ai {
+                let radius = enemy.body.collider.compute_aabb().size().len().as_f32()
+                    / std::f32::consts::SQRT_2
+                    / 2.0;
+                let rotation = enemy.body.collider.rotation.map(Coord::as_f32);
+                let resolution = 20;
+
+                let mut open_angle = Angle::from_degrees(15.0);
+                if let PacmanState::Power { .. } = &pacman.state {
+                    open_angle += Angle::from_degrees(
+                        15.0 * ((model.game_time.as_f32() * 3.0).fract() * 2.0 - 1.0),
+                    );
+                }
+
+                let max_angle = Angle::from_degrees(360.0) - open_angle;
+                let vertices: Vec<_> = std::iter::once(-vec2(radius * 0.2, 0.0))
+                    .chain((0..resolution).map(|i| {
+                        let t = i as f32 / (resolution - 1) as f32;
+                        let angle = open_angle + (max_angle - open_angle) * t;
+                        angle.unit_vec() * radius
+                    }))
+                    .map(|pos| enemy.body.collider.position.as_f32() + pos.rotate(rotation))
+                    .collect();
+                self.geng.draw2d().draw(
+                    framebuffer,
+                    &model.camera,
+                    &vertices,
+                    self.assets.palette.enemy,
+                    ugli::DrawMode::TriangleFan,
+                );
+            } else {
+                self.draw_collider(
+                    &enemy.body.collider,
+                    self.assets.palette.enemy,
+                    &model.camera,
+                    framebuffer,
+                );
+            }
             self.draw_health_bar(
                 &enemy.body.collider,
                 &enemy.health,
