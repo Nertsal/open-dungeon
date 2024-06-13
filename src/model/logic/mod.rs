@@ -474,7 +474,31 @@ impl Model {
                                 let delta = target - enemy.body.collider.position;
                                 if delta.len_sqr() < r32(1.0) {
                                     if rng.gen_bool(0.3) {
-                                        // helicopter.state = HelicopterState::Minions { minions: , delay:  } ;
+                                        // Minions
+                                        let tank = EnemyConfig {
+                                            cost: None,
+                                            score: Some(200),
+                                            health: r32(23.0),
+                                            damage: r32(10.0),
+                                            speed: r32(2.0),
+                                            acceleration: r32(30.0),
+                                            shape: Shape::square(1.1),
+                                            ai: EnemyAI::Crawler,
+                                        };
+                                        let circle = EnemyConfig {
+                                            cost: None,
+                                            score: Some(50),
+                                            health: r32(6.0),
+                                            damage: r32(5.0),
+                                            speed: r32(3.0),
+                                            acceleration: r32(5.0),
+                                            shape: Shape::circle(0.4),
+                                            ai: EnemyAI::Crawler,
+                                        };
+                                        helicopter.state = HelicopterState::Minions {
+                                            minions: vec![tank, circle.clone(), circle],
+                                            delay: Bounded::new_max(r32(0.5)),
+                                        };
                                     } else {
                                         helicopter.state = HelicopterState::Minigun {
                                             timer: r32(5.0),
@@ -519,7 +543,26 @@ impl Model {
                                     helicopter.state = HelicopterState::Idle;
                                 }
                             }
-                            HelicopterState::Minions { minions, delay } => todo!(),
+                            HelicopterState::Minions { minions, delay } => {
+                                delay.change(-delta_time);
+                                if delay.is_min() {
+                                    delay.set_ratio(Time::ONE);
+
+                                    let Some(minion) = minions.pop() else {
+                                        helicopter.state = HelicopterState::Idle;
+                                        continue;
+                                    };
+                                    self.spawn_queue.push(Enemy::new(
+                                        EnemyConfig {
+                                            health: minion.health
+                                                + self.config.difficulty.enemy_health_scaling
+                                                    * self.difficulty,
+                                            ..minion
+                                        },
+                                        enemy.body.collider.position,
+                                    ));
+                                }
+                            }
                         }
                     }
                 }
