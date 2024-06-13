@@ -114,6 +114,9 @@ impl Model {
                 let damage = enemy.stats.damage * damage_mult;
                 player.health.change(-damage);
                 if damage > Hp::ZERO {
+                    player
+                        .invincibility
+                        .set(player.stats.hurt_invincibility_time);
                     self.particles_queue.push(SpawnParticles {
                         kind: ParticleKind::HitSelf,
                         distribution: ParticleDistribution::Circle {
@@ -226,6 +229,8 @@ impl Model {
             vec2(0.0, 2.5).as_r32()
         };
 
+        self.pacman_1ups.clear();
+
         let mut rng = thread_rng();
         let options = [
             UpgradeEffect::Width,
@@ -309,7 +314,7 @@ impl Model {
                             let target = match *target {
                                 Some(target)
                                     if (target - enemy.body.collider.position).len_sqr()
-                                        > r32(100.0) =>
+                                        > r32(1.0) =>
                                 {
                                     target
                                 }

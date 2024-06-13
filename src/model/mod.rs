@@ -211,7 +211,13 @@ impl Model {
                 health: Health::new_max(config.player.health),
                 body: PhysicsBody::new(vec2::ZERO, config.player.shape),
                 stats: config.player.clone(),
-                invincibility: Bounded::new_zero(config.player.dash.invincibility_time),
+                invincibility: Bounded::new_zero(
+                    config
+                        .player
+                        .dash
+                        .invincibility_time
+                        .max(config.player.hurt_invincibility_time),
+                ),
                 draw_action: None,
             },
             rooms,

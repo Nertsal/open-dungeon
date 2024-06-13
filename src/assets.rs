@@ -97,6 +97,7 @@ pub struct PlayerConfig {
     pub health: Hp,
     pub speed: Coord,
     pub acceleration: Coord,
+    pub hurt_invincibility_time: Time,
     pub dash: DashConfig,
     pub shape: Shape,
     pub shield: Shape,

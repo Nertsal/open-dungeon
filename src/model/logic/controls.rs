@@ -144,7 +144,9 @@ impl Model {
         self.player.body.collider.position = last;
         self.player.body.velocity =
             (last - prelast).normalize_or_zero() * self.config.player.dash.speed;
-        self.player.invincibility.set_ratio(Time::ONE);
+        self.player
+            .invincibility
+            .set(self.player.stats.dash.invincibility_time);
 
         self.damage_around(
             drawing,
