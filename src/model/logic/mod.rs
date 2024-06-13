@@ -257,8 +257,14 @@ impl Model {
                     charge.change(delta_time);
                     if charge.is_max() {
                         charge.set_ratio(Time::ZERO);
-                        self.spawn_queue
-                            .push(Enemy::new((**bullet).clone(), enemy.body.collider.position));
+                        self.spawn_queue.push(Enemy::new(
+                            EnemyConfig {
+                                health: bullet.health
+                                    + self.config.difficulty.enemy_health_scaling * self.difficulty,
+                                ..(**bullet).clone()
+                            },
+                            enemy.body.collider.position,
+                        ));
                     }
 
                     let target = self.player.body.collider.position
@@ -463,7 +469,12 @@ impl Model {
         // }
 
         room.expanded_direction = Some(closest);
-        let size = vec2(rng.gen_range(15.0..=25.0), rng.gen_range(15.0..=25.0)).as_r32();
+        let mut gen = || {
+            (r32(rng.gen_range(15.0..=25.0))
+                + self.config.difficulty.room_size_scaling * self.difficulty)
+                .min(self.config.difficulty.room_size_max)
+        };
+        let size = vec2(gen(), gen()).as_r32();
         let new_room = match closest {
             Direction::Left => Aabb2::point(vec2(room.area.min.x, room.area.center().y))
                 .extend_left(size.x)
@@ -513,7 +524,14 @@ impl Model {
                 }
 
                 difficulty -= config.cost.unwrap_or(R32::ZERO);
-                self.enemies.push(Enemy::new(config.clone(), position));
+                self.enemies.push(Enemy::new(
+                    EnemyConfig {
+                        health: config.health
+                            + self.config.difficulty.enemy_health_scaling * self.difficulty,
+                        ..config.clone()
+                    },
+                    position,
+                ));
                 break;
             }
         }

@@ -85,6 +85,9 @@ pub struct DifficultyConfig {
     pub time_scaling: R32,
     pub room_bonus: R32,
     pub room_exponent: R32,
+    pub enemy_health_scaling: R32,
+    pub room_size_scaling: R32,
+    pub room_size_max: R32,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
