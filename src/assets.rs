@@ -52,6 +52,7 @@ pub struct Palette {
     pub collision: Rgba<f32>,
     pub upgrade: Rgba<f32>,
     pub pacman_1up: Rgba<f32>,
+    pub idk: Rgba<f32>,
 }
 
 #[derive(geng::asset::Load, Debug, Clone, Serialize, Deserialize)]

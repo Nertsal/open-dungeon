@@ -32,6 +32,10 @@ pub enum EnemyAI {
         #[serde(default)]
         pacman: PacmanAI,
     },
+    Helicopter {
+        #[serde(default)]
+        helicopter: HelicopterAI,
+    },
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -66,4 +70,13 @@ impl Default for PacmanAI {
 #[derive(Debug, Clone)]
 pub struct Pacman1Up {
     pub collider: Collider,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct HelicopterAI {}
+
+impl Default for HelicopterAI {
+    fn default() -> Self {
+        Self {}
+    }
 }

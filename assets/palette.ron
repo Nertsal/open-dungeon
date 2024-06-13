@@ -15,4 +15,5 @@ Palette(
     collision: "#eaf257",
     upgrade: "#19705a",
     pacman_1up: "#2dad6b",
+    idk: "#8fcc49",
 )

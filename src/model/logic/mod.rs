@@ -411,6 +411,7 @@ impl Model {
                         }
                     }
                 },
+                EnemyAI::Helicopter { helicopter } => {}
             }
 
             enemy.body.collider.position += enemy.body.velocity * delta_time;
