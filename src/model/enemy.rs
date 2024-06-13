@@ -73,10 +73,16 @@ pub struct Pacman1Up {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct HelicopterAI {}
+pub struct HelicopterAI {
+    pub oscilate: Bounded<Time>,
+    pub target: Option<Position>,
+}
 
 impl Default for HelicopterAI {
     fn default() -> Self {
-        Self {}
+        Self {
+            oscilate: Bounded::new_max(r32(7.0)),
+            target: None,
+        }
     }
 }

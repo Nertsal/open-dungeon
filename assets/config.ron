@@ -88,5 +88,20 @@ Config(
                 ),
             ],
         ),
+        BossConfig(
+            room: 10,
+            room_size: ( 30.0, 30.0 ),
+            enemies: [
+                EnemyConfig(
+                    score: 9000,
+                    health: 300.0,
+                    damage: 50.0,
+                    speed: 20.0,
+                    acceleration: 8.0,
+                    shape: Circle ( radius: 1.5 ),
+                    ai: Helicopter ( ),
+                ),
+            ],
+        ),
     ]
 )

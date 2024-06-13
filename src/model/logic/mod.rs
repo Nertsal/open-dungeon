@@ -411,7 +411,45 @@ impl Model {
                         }
                     }
                 },
-                EnemyAI::Helicopter { helicopter } => {}
+                EnemyAI::Helicopter { helicopter } => {
+                    if let Some((_, room)) = self
+                        .rooms
+                        .iter()
+                        .find(|(_, room)| room.area.contains(enemy.body.collider.position))
+                    {
+                        // Oscilate
+                        helicopter.oscilate.change(-delta_time);
+                        if helicopter.oscilate.is_min() || helicopter.target.is_none() {
+                            helicopter.oscilate.set_ratio(Time::ONE);
+                            // Change target
+                            let points = room
+                                .area
+                                .extend_uniform(-r32(5.0))
+                                .corners()
+                                .into_iter()
+                                .filter(|pos| {
+                                    (*pos - enemy.body.collider.position).len_sqr() > r32(1.0)
+                                });
+                            if let Some(point) = points.choose(&mut rng) {
+                                helicopter.target = Some(point);
+                            }
+                        }
+
+                        // Move to target
+                        if let Some(target) = helicopter.target {
+                            let delta = target - enemy.body.collider.position;
+                            let target_velocity = delta.clamp_len(..=enemy.stats.speed);
+                            let acc =
+                                if vec2::dot(target_velocity, enemy.body.velocity) < Coord::ZERO {
+                                    enemy.stats.acceleration * r32(2.0)
+                                } else {
+                                    enemy.stats.acceleration
+                                };
+                            enemy.body.velocity += (target_velocity - enemy.body.velocity)
+                                .clamp_len(..=acc * delta_time);
+                        }
+                    }
+                }
             }
 
             enemy.body.collider.position += enemy.body.velocity * delta_time;
