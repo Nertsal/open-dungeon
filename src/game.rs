@@ -12,6 +12,7 @@ pub struct GameState {
     model: Model,
 
     drawing_sfx: geng::SoundEffect,
+    helicopter_sfx: geng::SoundEffect,
     volume: f32,
 }
 
@@ -44,6 +45,11 @@ impl GameState {
 
             drawing_sfx: {
                 let mut sfx = assets.sounds.drawing.play();
+                sfx.set_volume(0.0);
+                sfx
+            },
+            helicopter_sfx: {
+                let mut sfx = assets.sounds.helicopter.play();
                 sfx.set_volume(0.0);
                 sfx
             },
@@ -108,12 +114,14 @@ impl geng::State for GameState {
         self.model.update(input, delta_time);
 
         let mut drawing = false;
+        let mut helicopter = false;
         let mut hit = false;
         let mut kill = false;
         for event in std::mem::take(&mut self.model.events) {
             match event {
                 Event::Sound(sfx) => match sfx {
                     SoundEvent::Drawing => drawing = true,
+                    SoundEvent::Helicopter => helicopter = true,
                     SoundEvent::Hit => hit = true,
                     SoundEvent::Kill => kill = true,
                     SoundEvent::HitSelf => self.play_sfx(&self.assets.sounds.hit_self),
@@ -130,6 +138,8 @@ impl geng::State for GameState {
         }
         self.drawing_sfx
             .set_volume(if drawing { 1.0 } else { 0.0 } * self.volume);
+        self.helicopter_sfx
+            .set_volume(if helicopter { 1.0 } else { 0.0 } * self.volume);
     }
 
     fn handle_event(&mut self, event: geng::Event) {

@@ -13,6 +13,8 @@ pub struct Assets {
 pub struct Sounds {
     #[load(options(looped = "true"))]
     pub drawing: geng::Sound,
+    #[load(options(looped = "true"))]
+    pub helicopter: geng::Sound,
     pub hit: geng::Sound,
     pub kill: geng::Sound,
     pub hit_self: geng::Sound,

@@ -521,6 +521,7 @@ impl Model {
                     }
                 },
                 EnemyAI::Helicopter { helicopter } => {
+                    self.events.push(Event::Sound(SoundEvent::Helicopter));
                     if let Some((_, room)) = self
                         .rooms
                         .iter()
