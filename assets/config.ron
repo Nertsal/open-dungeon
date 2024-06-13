@@ -20,12 +20,19 @@ Config(
         speed: 7.0,
         acceleration: 50.0,
         hurt_invincibility_time: 0.5,
-        dash: DashConfig(
+        dash: DrawConfig(
             max_distance: 7.0,
+            speed: 10.0,
+            width: 0.6,
+            damage: 7.0,
+            invincibility_time: 0.2,
+        ),
+        bow: DrawConfig(
+            max_distance: 5.0,
             speed: 10.0,
             width: 0.5,
             damage: 5.0,
-            invincibility_time: 0.2,
+            invincibility_time: 0.0,
         ),
         shape: Triangle( height: 0.8 ),
         shield: Circle ( radius: 0.5 ),
@@ -91,7 +98,7 @@ Config(
             ],
         ),
         BossConfig(
-            room: 10,
+            room: 1,
             room_size: ( 30.0, 30.0 ),
             enemies: [
                 EnemyConfig(

@@ -31,6 +31,7 @@ pub struct Model {
     pub rooms: Arena<Room>,
     pub room_colliders: Vec<(Index, Direction, Collider)>,
     pub objects: Vec<Object>,
+    pub minions: Vec<Minion>,
     pub enemies: Vec<Enemy>,
     pub upgrades: Vec<Upgrade>,
     pub particles: Arena<Particle>,
@@ -151,15 +152,43 @@ impl PhysicsBody {
             angular_velocity: Angle::ZERO,
         }
     }
+
+    pub fn move_rotation(&mut self) {
+        self.angular_velocity =
+            Angle::from_radians(self.velocity.len() * self.velocity.x.signum() / r32(2.0));
+    }
+}
+
+#[derive(Debug, Clone)]
+pub struct Minion {
+    pub health: Health,
+    pub body: PhysicsBody,
+    pub ai: MinionAI,
+}
+
+#[derive(Debug, Clone)]
+pub enum MinionAI {
+    Bullet {
+        damage: Hp,
+        explosion_damage: Hp,
+        explosion_radius: Coord,
+    },
 }
 
 #[derive(Debug, Clone)]
 pub struct Player {
     pub health: Health,
     pub body: PhysicsBody,
+    pub active_weapon: Weapon,
     pub stats: PlayerConfig,
     pub invincibility: Bounded<Time>,
     pub draw_action: Option<Drawing>,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum Weapon {
+    Dash,
+    Bow,
 }
 
 #[derive(Debug, Clone)]
@@ -216,6 +245,7 @@ impl Model {
             player: Player {
                 health: Health::new_max(config.player.health),
                 body: PhysicsBody::new(vec2::ZERO, config.player.shape),
+                active_weapon: Weapon::Bow,
                 stats: config.player.clone(),
                 invincibility: Bounded::new_zero(
                     config
@@ -229,6 +259,7 @@ impl Model {
             rooms,
             room_colliders: Vec::new(),
             objects: Vec::new(),
+            minions: Vec::new(),
             enemies: Vec::new(),
             upgrades: Vec::new(),
             particles: Arena::new(),

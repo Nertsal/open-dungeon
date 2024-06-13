@@ -19,12 +19,6 @@ impl Enemy {
             stats: config,
         }
     }
-
-    pub fn move_rotation(&mut self) {
-        self.body.angular_velocity = Angle::from_radians(
-            self.body.velocity.len() * self.body.velocity.x.signum() / r32(2.0),
-        );
-    }
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

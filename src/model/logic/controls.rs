@@ -117,20 +117,27 @@ impl Model {
             return;
         };
 
-        self.player_dash(drawing);
+        self.player_draw(drawing);
     }
 
-    pub fn player_dash(&mut self, drawing: Drawing) {
+    pub fn player_draw(&mut self, drawing: Drawing) {
         if drawing.points_smoothed.len() < 2 {
             return;
         }
 
         let can_expand = self.can_expand();
+
+        let player = &mut self.player;
+        let stats = match player.active_weapon {
+            Weapon::Dash => &player.stats.dash,
+            Weapon::Bow => &player.stats.bow,
+        };
+
         let expand_room = can_expand
             .then(|| {
                 self.rooms
                     .iter()
-                    .find(|(_, room)| room.area.contains(self.player.body.collider.position))
+                    .find(|(_, room)| room.area.contains(player.body.collider.position))
                     .map(|(idx, _)| idx)
             })
             .flatten();
@@ -141,26 +148,35 @@ impl Model {
             .get(drawing.points_smoothed.len() - 2)
             .unwrap();
 
-        self.player.body.collider.position = last;
-        self.player.body.velocity =
-            (last - prelast).normalize_or_zero() * self.config.player.dash.speed;
-        self.player
-            .invincibility
-            .set(self.player.stats.dash.invincibility_time);
+        player.invincibility.set(stats.invincibility_time);
 
-        self.damage_around(
-            drawing,
-            self.player.stats.dash.width,
-            self.player.stats.dash.damage,
-        );
+        match player.active_weapon {
+            Weapon::Dash => {
+                player.body.collider.position = last;
+                player.body.velocity = (last - prelast).normalize_or_zero() * stats.speed;
+            }
+            Weapon::Bow => {
+                let mut bullet = Minion {
+                    health: Bounded::new_max(r32(1.0)),
+                    body: PhysicsBody::new(last, Shape::circle(0.3)),
+                    ai: MinionAI::Bullet {
+                        damage: stats.damage,
+                        explosion_damage: stats.damage * r32(1.5),
+                        explosion_radius: stats.width * r32(2.0),
+                    },
+                };
+                bullet.body.velocity = (last - prelast).normalize_or_zero() * stats.speed;
+                self.minions.push(bullet);
+            }
+        }
+
+        let width = stats.width;
+        let damage = stats.damage;
+        self.damage_around(drawing, width, damage);
 
         if let Some(room) = expand_room {
-            if !self
-                .rooms
-                .iter()
-                .any(|(_, room)| room.area.contains(self.player.body.collider.position))
-            {
-                self.unlock_room(room, self.player.body.collider.position);
+            if !self.rooms.iter().any(|(_, room)| room.area.contains(last)) {
+                self.unlock_room(room, last);
             }
         }
     }

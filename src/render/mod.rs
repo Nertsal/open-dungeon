@@ -48,6 +48,16 @@ impl GameRender {
                 .draw2d(framebuffer, &model.camera, &chain);
         }
 
+        // Minions
+        for minion in &model.minions {
+            self.draw_collider(
+                &minion.body.collider,
+                self.assets.palette.minion,
+                &model.camera,
+                framebuffer,
+            );
+        }
+
         // Enemies
         for enemy in &model.enemies {
             match &enemy.ai {

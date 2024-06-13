@@ -46,6 +46,7 @@ pub struct Palette {
     pub wall: Rgba<f32>,
     pub wall_block: Rgba<f32>,
     pub player: Rgba<f32>,
+    pub minion: Rgba<f32>,
     pub object: Rgba<f32>,
     pub enemy: Rgba<f32>,
     pub health: Rgba<f32>,
@@ -104,7 +105,8 @@ pub struct PlayerConfig {
     pub speed: Coord,
     pub acceleration: Coord,
     pub hurt_invincibility_time: Time,
-    pub dash: DashConfig,
+    pub dash: DrawConfig,
+    pub bow: DrawConfig,
     pub shape: Shape,
     pub shield: Shape,
 }
@@ -123,7 +125,7 @@ pub struct EnemyConfig {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct DashConfig {
+pub struct DrawConfig {
     pub max_distance: Coord,
     pub speed: Coord,
     pub width: Coord,

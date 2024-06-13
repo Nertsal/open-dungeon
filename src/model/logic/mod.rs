@@ -16,7 +16,8 @@ impl Model {
 
         self.compress_rooms(delta_time);
         self.controls(input, delta_time);
-        self.ai(delta_time);
+        self.enemy_ai(delta_time);
+        self.minion_ai(delta_time);
         self.collisions(delta_time);
         self.passive_particles(delta_time);
         self.check_deaths(delta_time);
@@ -149,6 +150,22 @@ impl Model {
             }
         }
 
+        // Minion - Enemy collisions
+        for minion in &mut self.minions {
+            for enemy in &mut self.enemies {
+                if minion.body.collider.check(&enemy.body.collider) {
+                    match minion.ai {
+                        MinionAI::Bullet { damage, .. } => {
+                            // NOTE: explosion managed on death
+                            minion.health.set_ratio(Hp::ZERO);
+                            enemy.health.change(-damage);
+                            self.events.push(Event::Sound(SoundEvent::Hit));
+                        }
+                    }
+                }
+            }
+        }
+
         // Room collisions
         let player = &mut self.player;
         for (_, _, room) in &self.room_colliders {
@@ -159,6 +176,24 @@ impl Model {
                 player.body.velocity -= collision.normal * projection * (Coord::ONE + bounciness);
                 if projection > r32(1.0) {
                     self.events.push(Event::Sound(SoundEvent::Bounce));
+                }
+            }
+
+            for minion in &mut self.minions {
+                if minion.body.collider.check(room) {
+                    let MinionAI::Bullet { .. } = minion.ai;
+                    {
+                        minion.health.set_ratio(Hp::ZERO);
+                    }
+
+                    // let bounciness = r32(0.8);
+                    // minion.body.collider.position -= collision.normal * collision.penetration;
+                    // let projection = vec2::dot(minion.body.velocity, collision.normal);
+                    // minion.body.velocity -=
+                    //     collision.normal * projection * (Coord::ONE + bounciness);
+                    // if projection > r32(1.0) {
+                    //     self.events.push(Event::Sound(SoundEvent::Bounce));
+                    // }
                 }
             }
 
@@ -183,9 +218,18 @@ impl Model {
 
     pub fn collect_upgrade(&mut self, upgrade: Upgrade) {
         match upgrade.effect {
-            UpgradeEffect::Width => self.player.stats.dash.width += r32(0.5),
-            UpgradeEffect::Range => self.player.stats.dash.max_distance += r32(3.0),
-            UpgradeEffect::Damage => self.player.stats.dash.damage += r32(5.0),
+            UpgradeEffect::Width => {
+                self.player.stats.dash.width += r32(0.5);
+                self.player.stats.bow.width += r32(0.5);
+            }
+            UpgradeEffect::Range => {
+                self.player.stats.dash.max_distance += r32(3.0);
+                self.player.stats.bow.max_distance += r32(3.0);
+            }
+            UpgradeEffect::Damage => {
+                self.player.stats.dash.damage += r32(5.0);
+                self.player.stats.bow.damage += r32(5.0);
+            }
             UpgradeEffect::Speed => {
                 self.player.stats.speed += r32(2.0);
                 self.player.stats.acceleration += r32(5.0);
@@ -206,6 +250,39 @@ impl Model {
     }
 
     pub fn check_deaths(&mut self, delta_time: Time) {
+        self.minions.retain(|minion| {
+            let alive = minion.health.is_above_min();
+            if !alive {
+                match minion.ai {
+                    MinionAI::Bullet {
+                        explosion_damage,
+                        explosion_radius,
+                        ..
+                    } => {
+                        let explosion = Collider::new(
+                            minion.body.collider.position,
+                            Shape::circle(explosion_radius),
+                        );
+                        for enemy in &mut self.enemies {
+                            if explosion.check(&enemy.body.collider) {
+                                enemy.health.change(-explosion_damage);
+                            }
+                        }
+
+                        self.particles_queue.push(SpawnParticles {
+                            kind: ParticleKind::Damage,
+                            distribution: ParticleDistribution::Circle {
+                                center: minion.body.collider.position,
+                                radius: explosion_radius,
+                            },
+                            ..default()
+                        });
+                    }
+                }
+            }
+            alive
+        });
+
         let in_battle = !self.enemies.is_empty();
         self.enemies.retain(|enemy| {
             let alive = enemy.health.is_above_min();
@@ -284,7 +361,7 @@ impl Model {
             (self.config.score.room_bonus as f32 * self.score_multiplier.as_f32()) as Score;
     }
 
-    pub fn ai(&mut self, delta_time: Time) {
+    pub fn enemy_ai(&mut self, delta_time: Time) {
         let mut rng = thread_rng();
 
         for enemy in &mut self.enemies {
@@ -292,10 +369,10 @@ impl Model {
                 EnemyAI::Idle => {
                     let drag = r32(0.9);
                     enemy.body.velocity *= drag;
-                    enemy.move_rotation();
+                    enemy.body.move_rotation();
                 }
                 EnemyAI::Bullet => {
-                    enemy.move_rotation();
+                    enemy.body.move_rotation();
                 }
                 EnemyAI::Crawler => {
                     let target = self.player.body.collider.position;
@@ -304,7 +381,7 @@ impl Model {
                         * enemy.stats.speed;
                     enemy.body.velocity += (target_velocity - enemy.body.velocity)
                         .clamp_len(..=enemy.stats.acceleration * delta_time);
-                    enemy.move_rotation();
+                    enemy.body.move_rotation();
                 }
                 EnemyAI::Shooter {
                     preferred_distance,
@@ -333,7 +410,7 @@ impl Model {
                         * enemy.stats.speed;
                     enemy.body.velocity += (target_velocity - enemy.body.velocity)
                         .clamp_len(..=enemy.stats.acceleration * delta_time);
-                    enemy.move_rotation();
+                    enemy.body.move_rotation();
                 }
                 EnemyAI::Pacman { pacman } => match &mut pacman.state {
                     PacmanState::Normal { spawn_1up, target } => {
@@ -572,6 +649,19 @@ impl Model {
 
             enemy.body.collider.position += enemy.body.velocity * delta_time;
             enemy.body.collider.rotation += enemy.body.angular_velocity * delta_time;
+        }
+    }
+
+    pub fn minion_ai(&mut self, delta_time: Time) {
+        for minion in &mut self.minions {
+            match &mut minion.ai {
+                MinionAI::Bullet { .. } => {
+                    minion.body.move_rotation();
+                }
+            }
+
+            minion.body.collider.position += minion.body.velocity * delta_time;
+            minion.body.collider.rotation += minion.body.angular_velocity * delta_time;
         }
     }
 
