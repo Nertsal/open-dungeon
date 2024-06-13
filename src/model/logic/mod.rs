@@ -182,6 +182,10 @@ impl Model {
                 self.player.stats.speed += r32(2.0);
                 self.player.stats.acceleration += r32(5.0);
             }
+            UpgradeEffect::Difficulty => {
+                self.difficulty += self.config.difficulty.upgrade_amount;
+                self.score_multiplier += self.config.score.upgrade_multiplier;
+            }
         };
         self.particles_queue.push(SpawnParticles {
             kind: ParticleKind::Upgrade,
@@ -198,7 +202,8 @@ impl Model {
         self.enemies.retain(|enemy| {
             let alive = enemy.health.is_above_min();
             if !alive {
-                self.score += enemy.stats.score.unwrap_or(0);
+                self.score += (enemy.stats.score.unwrap_or(0) as f32
+                    * self.score_multiplier.as_f32()) as Score;
                 self.events.push(Event::Sound(SoundEvent::Kill));
             }
             alive
@@ -237,6 +242,7 @@ impl Model {
             UpgradeEffect::Range,
             UpgradeEffect::Damage,
             UpgradeEffect::Speed,
+            UpgradeEffect::Difficulty,
         ];
         let options: Vec<_> = options.choose_multiple(&mut rng, 2).collect();
         let upgrades = options.iter().enumerate().map(|(i, effect)| Upgrade {
@@ -255,7 +261,8 @@ impl Model {
                 .difficulty
                 .room_exponent
                 .powf(r32(self.rooms_cleared as f32));
-        self.score += self.config.score.room_bonus;
+        self.score +=
+            (self.config.score.room_bonus as f32 * self.score_multiplier.as_f32()) as Score;
     }
 
     pub fn ai(&mut self, delta_time: Time) {

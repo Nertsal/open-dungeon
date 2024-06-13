@@ -175,6 +175,7 @@ impl GameRender {
                 UpgradeEffect::Range => &self.assets.sprites.range,
                 UpgradeEffect::Damage => &self.assets.sprites.damage,
                 UpgradeEffect::Speed => &self.assets.sprites.speed,
+                UpgradeEffect::Difficulty => &self.assets.sprites.skull,
             };
 
             let pos = upgrade.collider.compute_aabb().center().as_f32();

@@ -25,6 +25,7 @@ pub struct Model {
     pub rooms_cleared: usize,
     pub difficulty: R32,
     pub score: Score,
+    pub score_multiplier: R32,
 
     pub player: Player,
     pub rooms: Arena<Room>,
@@ -129,6 +130,7 @@ pub enum UpgradeEffect {
     Damage,
     Speed,
     // Heal,
+    Difficulty,
 }
 
 #[derive(Debug, Clone)]
@@ -206,6 +208,7 @@ impl Model {
             rooms_cleared: 0,
             difficulty: config.difficulty.initial,
             score: 0,
+            score_multiplier: R32::ONE,
 
             player: Player {
                 health: Health::new_max(config.player.health),

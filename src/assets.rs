@@ -32,6 +32,8 @@ pub struct Sprites {
     pub speed: ugli::Texture,
     #[load(options(filter = "ugli::Filter::Nearest"))]
     pub heal: ugli::Texture,
+    #[load(options(filter = "ugli::Filter::Nearest"))]
+    pub skull: ugli::Texture,
 }
 
 #[derive(geng::asset::Load, Debug, Clone, Serialize, Deserialize)]
@@ -80,11 +82,13 @@ pub struct Config {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ScoreConfig {
     pub room_bonus: Score,
+    pub upgrade_multiplier: R32,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct DifficultyConfig {
     pub initial: R32,
+    pub upgrade_amount: R32,
     pub time_scaling: R32,
     pub room_bonus: R32,
     pub room_exponent: R32,

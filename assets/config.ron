@@ -3,6 +3,7 @@ Config(
     starting_area: (7.0, 7.0),
     difficulty: DifficultyConfig(
         initial: 5.0,
+        upgrade_amount: 10.0,
         time_scaling: 0.1,
         room_bonus: 1.0,
         room_exponent: 1.1,
@@ -12,6 +13,7 @@ Config(
     ),
     score: ScoreConfig(
         room_bonus: 1000,
+        upgrade_multiplier: 1.1,
     ),
     player: PlayerConfig(
         health: 50.0,
