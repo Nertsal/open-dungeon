@@ -324,9 +324,10 @@ impl Model {
                                         *target = Some(up.collider.position);
                                     } else {
                                         for _ in 0..10 {
+                                            let area = room.area.extend_uniform(r32(-5.0));
                                             let position = vec2(
-                                                rng.gen_range(room.area.min.x..=room.area.max.x),
-                                                rng.gen_range(room.area.min.y..=room.area.max.y),
+                                                rng.gen_range(area.min.x..=area.max.x),
+                                                rng.gen_range(area.min.y..=area.max.y),
                                             );
                                             if (enemy.body.collider.position - position).len_sqr()
                                                 > r32(100.0)
@@ -341,7 +342,7 @@ impl Model {
                             };
                             let delta = target - enemy.body.collider.position;
                             enemy.body.velocity = if enemy.body.velocity.y == Coord::ZERO
-                                && delta.x.abs() > r32(0.1)
+                                && delta.x.abs() > r32(0.5)
                                 || enemy.body.velocity.x == Coord::ZERO && delta.y.abs() < r32(0.1)
                             {
                                 vec2(delta.x.signum(), Coord::ZERO) * enemy.stats.speed
@@ -362,14 +363,14 @@ impl Model {
                                         * (room.area.size() / r32(2.0) - vec2(10.0, 10.0).as_r32());
                                 for _ in 0..10 {
                                     let position = rng.gen_circle(target, r32(3.0));
-                                    if self.pacman_1ups.iter().any(|up| {
+                                    if !self.pacman_1ups.iter().any(|up| {
                                         (up.collider.position - position).len_sqr() < r32(16.0)
                                     }) {
-                                        continue;
+                                        self.pacman_1ups.push(Pacman1Up {
+                                            collider: Collider::new(position, Shape::circle(0.5)),
+                                        });
+                                        break;
                                     }
-                                    self.pacman_1ups.push(Pacman1Up {
-                                        collider: Collider::new(position, Shape::circle(0.5)),
-                                    });
                                 }
                             }
 
@@ -390,7 +391,7 @@ impl Model {
                         let delta =
                             self.player.body.collider.position - enemy.body.collider.position;
                         enemy.body.velocity = if enemy.body.velocity.y == Coord::ZERO
-                            && delta.x.abs() > r32(0.1)
+                            && delta.x.abs() > r32(0.5)
                             || enemy.body.velocity.x == Coord::ZERO && delta.y.abs() < r32(0.1)
                         {
                             vec2(delta.x.signum(), Coord::ZERO) * pacman.speed_power

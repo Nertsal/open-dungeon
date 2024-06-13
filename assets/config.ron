@@ -79,7 +79,7 @@ Config(
             enemies: [
                 EnemyConfig(
                     score: 4000,
-                    health: 100.0,
+                    health: 200.0,
                     damage: 20.0,
                     speed: 5.0,
                     acceleration: 100.0,
