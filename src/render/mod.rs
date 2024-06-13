@@ -89,12 +89,43 @@ impl GameRender {
                     let center = enemy.body.collider.position.as_f32();
 
                     // Body
-                    self.geng.draw2d().circle(
+                    self.geng.draw2d().circle_with_cut(
                         framebuffer,
                         &model.camera,
                         center,
+                        radius - 0.1,
                         radius,
                         self.assets.palette.enemy,
+                    );
+
+                    let direction = (model.player.body.collider.position
+                        - enemy.body.collider.position)
+                        .x
+                        .signum()
+                        .as_f32();
+
+                    // Tail
+                    let a = center - vec2(radius, 0.0) * direction;
+                    let b = center - vec2(radius * 2.5, 0.0) * direction;
+                    self.geng.draw2d().draw2d(
+                        framebuffer,
+                        &model.camera,
+                        &draw2d::Segment::new(
+                            Segment(a, b),
+                            radius * 0.1,
+                            self.assets.palette.enemy,
+                        ),
+                    );
+                    let a = b + vec2(0.0, radius * 0.3);
+                    let b = b - vec2(0.0, radius * 0.3);
+                    self.geng.draw2d().draw2d(
+                        framebuffer,
+                        &model.camera,
+                        &draw2d::Segment::new(
+                            Segment(a, b),
+                            radius * 0.1,
+                            self.assets.palette.enemy,
+                        ),
                     );
 
                     // Blades
@@ -114,13 +145,12 @@ impl GameRender {
                             &draw2d::Segment::new(
                                 Segment(a, b),
                                 radius * 0.15,
-                                self.assets.palette.idk,
+                                self.assets.palette.enemy,
                             ),
                         );
                     }
 
                     // Skids
-                    let direction = enemy.body.velocity.x.signum().as_f32();
                     let width = radius * 2.2;
                     let offset = -direction * vec2(radius * 0.2, 0.0);
                     let a = center + offset + vec2(-width / 2.0, -radius);
@@ -131,7 +161,7 @@ impl GameRender {
                         &draw2d::Segment::new(
                             Segment(a, b),
                             radius * 0.15,
-                            self.assets.palette.idk,
+                            self.assets.palette.enemy,
                         ),
                     );
                 }
