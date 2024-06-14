@@ -1,9 +1,10 @@
 mod collider;
 mod enemy;
+mod id;
 mod logic;
 mod particles;
 
-pub use self::{collider::*, enemy::*, particles::*};
+pub use self::{collider::*, enemy::*, id::*, particles::*};
 
 use crate::prelude::*;
 
@@ -21,6 +22,7 @@ pub struct Model {
     pub real_time: Time,
     pub game_time: Time,
     pub cursor_pos: Position,
+    pub id_gen: IdGenerator,
 
     pub rooms_cleared: usize,
     pub difficulty: R32,
@@ -32,7 +34,7 @@ pub struct Model {
     pub room_colliders: Vec<(Index, Direction, Collider)>,
     pub objects: Vec<Object>,
     pub minions: Vec<Minion>,
-    pub enemies: Vec<Enemy>,
+    pub enemies: Collection<Enemy>,
     pub upgrades: Vec<Upgrade>,
     pub particles: Arena<Particle>,
 
@@ -237,6 +239,7 @@ impl Model {
             real_time: Time::ZERO,
             game_time: Time::ZERO,
             cursor_pos: vec2::ZERO,
+            id_gen: IdGenerator::new(),
 
             rooms_cleared: 0,
             difficulty: config.difficulty.initial,
@@ -261,7 +264,7 @@ impl Model {
             room_colliders: Vec::new(),
             objects: Vec::new(),
             minions: Vec::new(),
-            enemies: Vec::new(),
+            enemies: Collection::new(),
             upgrades: Vec::new(),
             particles: Arena::new(),
 

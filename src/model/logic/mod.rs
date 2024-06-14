@@ -34,7 +34,7 @@ impl Model {
         self.enemies.extend(spawns);
     }
 
-    pub fn passive_particles(&mut self, _delta_time: Time) {
+    pub fn passive_particles(&mut self, delta_time: Time) {
         let can_expand = self.can_expand();
         for (index, direction, collider) in &self.room_colliders {
             let can_expand = can_expand
@@ -51,7 +51,7 @@ impl Model {
             };
             self.particles_queue.push(SpawnParticles {
                 kind,
-                density: r32(0.005),
+                density: r32(50.0) * delta_time,
                 distribution: ParticleDistribution::Aabb(collider.compute_aabb()),
                 lifetime: r32(2.0)..=r32(3.0),
                 ..default()
@@ -364,7 +364,14 @@ impl Model {
     pub fn enemy_ai(&mut self, delta_time: Time) {
         let mut rng = thread_rng();
 
-        for enemy in &mut self.enemies {
+        let ids: Vec<_> = self.enemies.ids().copied().collect();
+        for id in ids {
+            // NOTE: remove from the collection and insert back later
+            // to allow processing other enemies at the same time
+            let Some(mut enemy) = self.enemies.remove(&id) else {
+                log::error!("enemy killed before it could control itself");
+                continue;
+            };
             match &mut enemy.ai {
                 EnemyAI::Idle => {
                     let drag = r32(0.9);
@@ -392,6 +399,7 @@ impl Model {
                     if charge.is_max() {
                         charge.set_ratio(Time::ZERO);
                         self.spawn_queue.push(Enemy::new(
+                            self.id_gen.gen(),
                             EnemyConfig {
                                 health: bullet.health
                                     + self.config.difficulty.enemy_health_scaling * self.difficulty,
@@ -405,6 +413,75 @@ impl Model {
                         + (enemy.body.collider.position - self.player.body.collider.position)
                             .normalize_or_zero()
                             * *preferred_distance;
+                    let target_velocity = (target - enemy.body.collider.position)
+                        .normalize_or_zero()
+                        * enemy.stats.speed;
+                    enemy.body.velocity += (target_velocity - enemy.body.velocity)
+                        .clamp_len(..=enemy.stats.acceleration * delta_time);
+                    enemy.body.move_rotation();
+                }
+                EnemyAI::Healer {
+                    range,
+                    heal_ratio,
+                    cooldown,
+                } => {
+                    self.particles_queue.push(SpawnParticles {
+                        kind: ParticleKind::Heal,
+                        distribution: ParticleDistribution::Circle {
+                            center: enemy.body.collider.position,
+                            radius: r32(0.2),
+                        },
+                        density: r32(30.0) * delta_time,
+                        ..default()
+                    });
+
+                    cooldown.change(-delta_time);
+                    let mut heal_target = None;
+                    // Heal closest enemy in range
+                    if let Some((distance, target)) = self
+                        .enemies
+                        .iter_mut()
+                        .map(|target| {
+                            (
+                                (enemy.body.collider.position - target.body.collider.position)
+                                    .len(),
+                                target,
+                            )
+                        })
+                        .filter(|(_, enemy)| !enemy.health.is_max())
+                        .min_by_key(|(d, _)| *d)
+                    {
+                        heal_target = Some(target.body.collider.position);
+                        if cooldown.is_min() && distance < *range {
+                            cooldown.set_ratio(Time::ONE);
+                            target.health.change(target.health.max() * *heal_ratio);
+                            self.particles_queue.push(SpawnParticles {
+                                kind: ParticleKind::Heal,
+                                distribution: ParticleDistribution::Circle {
+                                    center: target.body.collider.position,
+                                    radius: r32(1.2),
+                                },
+                                ..default()
+                            });
+                        }
+                    }
+
+                    let target = heal_target.map_or_else(
+                        || {
+                            self.player.body.collider.position
+                                + (enemy.body.collider.position
+                                    - self.player.body.collider.position)
+                                    .normalize_or_zero()
+                                    * *range
+                                    * r32(1.5)
+                        },
+                        |target| {
+                            target
+                                + (enemy.body.collider.position - target).normalize_or_zero()
+                                    * *range
+                                    / r32(2.0)
+                        },
+                    );
                     let target_velocity = (target - enemy.body.collider.position)
                         .normalize_or_zero()
                         * enemy.stats.speed;
@@ -585,19 +662,18 @@ impl Model {
                                             shot_delay: Bounded::new_max(r32(0.2)),
                                         };
                                     }
-                                    continue;
-                                }
-
-                                let target_velocity = delta.clamp_len(..=enemy.stats.speed);
-                                let acc = if vec2::dot(target_velocity, enemy.body.velocity)
-                                    < Coord::ZERO
-                                {
-                                    enemy.stats.acceleration * r32(2.0)
                                 } else {
-                                    enemy.stats.acceleration
-                                };
-                                enemy.body.velocity += (target_velocity - enemy.body.velocity)
-                                    .clamp_len(..=acc * delta_time);
+                                    let target_velocity = delta.clamp_len(..=enemy.stats.speed);
+                                    let acc = if vec2::dot(target_velocity, enemy.body.velocity)
+                                        < Coord::ZERO
+                                    {
+                                        enemy.stats.acceleration * r32(2.0)
+                                    } else {
+                                        enemy.stats.acceleration
+                                    };
+                                    enemy.body.velocity += (target_velocity - enemy.body.velocity)
+                                        .clamp_len(..=acc * delta_time);
+                                }
                             }
                             HelicopterState::Minigun { timer, shot_delay } => {
                                 // Shoot
@@ -606,6 +682,7 @@ impl Model {
                                     shot_delay.set_ratio(Time::ONE);
 
                                     let mut bullet = Enemy::new(
+                                        self.id_gen.gen(),
                                         (*helicopter.minigun_bullet).clone(),
                                         enemy.body.collider.position,
                                     );
@@ -628,19 +705,19 @@ impl Model {
                                 if delay.is_min() {
                                     delay.set_ratio(Time::ONE);
 
-                                    let Some(minion) = minions.pop() else {
+                                    if let Some(minion) = minions.pop() {
                                         helicopter.state = HelicopterState::Idle;
-                                        continue;
-                                    };
-                                    self.spawn_queue.push(Enemy::new(
-                                        EnemyConfig {
-                                            health: minion.health
-                                                + self.config.difficulty.enemy_health_scaling
-                                                    * self.difficulty,
-                                            ..minion
-                                        },
-                                        enemy.body.collider.position,
-                                    ));
+                                        self.spawn_queue.push(Enemy::new(
+                                            self.id_gen.gen(),
+                                            EnemyConfig {
+                                                health: minion.health
+                                                    + self.config.difficulty.enemy_health_scaling
+                                                        * self.difficulty,
+                                                ..minion
+                                            },
+                                            enemy.body.collider.position,
+                                        ));
+                                    }
                                 }
                             }
                         }
@@ -650,6 +727,7 @@ impl Model {
 
             enemy.body.collider.position += enemy.body.velocity * delta_time;
             enemy.body.collider.rotation += enemy.body.angular_velocity * delta_time;
+            self.enemies.insert(enemy);
         }
     }
 
@@ -916,7 +994,8 @@ impl Model {
                 }
 
                 *difficulty -= config.cost.unwrap_or(R32::ZERO);
-                self.enemies.push(Enemy::new(
+                self.enemies.insert(Enemy::new(
+                    self.id_gen.gen(),
                     EnemyConfig {
                         health: config.health
                             + self.config.difficulty.enemy_health_scaling * self.difficulty,

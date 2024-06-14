@@ -1,7 +1,8 @@
 use super::*;
 
-#[derive(Debug, Clone)]
+#[derive(HasId, Debug, Clone)]
 pub struct Enemy {
+    pub id: Id,
     pub health: Health,
     pub body: PhysicsBody,
     pub stats: EnemyConfig,
@@ -9,10 +10,11 @@ pub struct Enemy {
 }
 
 impl Enemy {
-    pub fn new(config: EnemyConfig, position: Position) -> Self {
+    pub fn new(id: Id, config: EnemyConfig, position: Position) -> Self {
         let mut body = PhysicsBody::new(position, config.shape);
         body.mass = config.mass.unwrap_or(R32::ONE);
         Self {
+            id,
             health: Bounded::new_max(config.health),
             body,
             ai: config.ai.clone(),
@@ -30,6 +32,11 @@ pub enum EnemyAI {
         preferred_distance: Coord,
         charge: Bounded<Time>,
         bullet: Box<EnemyConfig>,
+    },
+    Healer {
+        range: Coord,
+        heal_ratio: R32,
+        cooldown: Bounded<Time>,
     },
     Pacman {
         #[serde(default)]

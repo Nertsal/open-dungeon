@@ -68,6 +68,20 @@ Config(
             shape: Rectangle( width: 1.1, height: 1.1 ),
             ai: Crawler,
         ),
+        "healer": EnemyConfig(
+            cost: 4.0,
+            score: 300,
+            health: 23.0,
+            damage: 10.0,
+            speed: 2.0,
+            acceleration: 5.0,
+            shape: Rectangle( width: 1.1, height: 1.1 ),
+            ai: Healer (
+                range: 5.0,
+                heal_ratio: 0.15,
+                cooldown: ( value: 0.0, min: 0.0, max: 1.5 ),
+            ),
+        ),
         "summoner": EnemyConfig(
             cost: 5.0,
             score: 200,

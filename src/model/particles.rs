@@ -20,6 +20,7 @@ pub enum ParticleKind {
     Upgrade,
     HitSelf,
     Shield,
+    Heal,
 }
 
 #[derive(Debug, Clone)]
@@ -33,7 +34,14 @@ impl ParticleDistribution {
     pub fn sample(&self, rng: &mut impl Rng, density: R32) -> Vec<Position> {
         match self {
             &ParticleDistribution::Aabb(aabb) => {
-                let amount = (density * aabb.width() * aabb.height()).ceil().as_f32() as usize;
+                let amount = density * aabb.width() * aabb.height();
+                let extra = if rng.gen_bool(amount.fract().as_f32().into()) {
+                    1
+                } else {
+                    0
+                };
+                let amount = (amount.floor()).as_f32() as usize + extra;
+
                 (0..amount)
                     .map(|_| {
                         vec2(
@@ -44,7 +52,14 @@ impl ParticleDistribution {
                     .collect()
             }
             &ParticleDistribution::Circle { center, radius } => {
-                let amount = (density * radius.sqr() * R32::PI).ceil().as_f32() as usize;
+                let amount = density * radius.sqr() * R32::PI;
+                let extra = if rng.gen_bool(amount.fract().as_f32().into()) {
+                    1
+                } else {
+                    0
+                };
+                let amount = (amount.floor()).as_f32() as usize + extra;
+
                 (0..amount)
                     .map(|_| rng.gen_circle(center, radius))
                     .collect()

@@ -269,6 +269,7 @@ impl GameRender {
                 ParticleKind::Upgrade => self.assets.palette.upgrade,
                 ParticleKind::HitSelf => self.assets.palette.player,
                 ParticleKind::Shield => self.assets.palette.enemy,
+                ParticleKind::Heal => self.assets.palette.idk,
             };
             color.a = t;
             self.draw_collider_transformed(
