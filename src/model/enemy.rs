@@ -4,6 +4,7 @@ use super::*;
 pub struct Enemy {
     pub id: Id,
     pub health: Health,
+    pub invincibility: Bounded<Time>,
     pub body: PhysicsBody,
     pub stats: EnemyConfig,
     pub ai: EnemyAI,
@@ -16,6 +17,7 @@ impl Enemy {
         Self {
             id,
             health: Bounded::new_max(config.health),
+            invincibility: Bounded::new_zero(r32(0.5)),
             body,
             ai: config.ai.clone(),
             stats: config,
@@ -37,6 +39,10 @@ pub enum EnemyAI {
         range: Coord,
         heal_ratio: R32,
         cooldown: Bounded<Time>,
+    },
+    Shielder {
+        preferred_distance: Coord,
+        target: Option<Id>,
     },
     Pacman {
         #[serde(default)]

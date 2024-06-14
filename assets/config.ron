@@ -93,6 +93,18 @@ Config(
                 cooldown: ( value: 0.0, min: 0.0, max: 1.5 ),
             ),
         ),
+        "shielder": EnemyConfig(
+            cost: 6.0,
+            score: 300,
+            health: 21.0,
+            damage: 10.0,
+            speed: 2.0,
+            acceleration: 5.0,
+            shape: Circle( radius: 0.6 ),
+            ai: Shielder (
+                preferred_distance: 6.0,
+            ),
+        ),
         "summoner": EnemyConfig(
             cost: 5.0,
             score: 200,

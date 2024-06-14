@@ -185,6 +185,23 @@ impl GameRender {
                     );
                 }
             }
+            if enemy.invincibility.is_above_min() {
+                let shield = Collider::new(
+                    enemy.body.collider.position,
+                    Shape::circle(
+                        enemy.body.collider.compute_aabb().size().len()
+                            / r32(std::f32::consts::SQRT_2 * 2.0)
+                            + r32(0.15),
+                    ),
+                );
+                self.draw_outline(
+                    &shield,
+                    0.1,
+                    self.assets.palette.drawing,
+                    &model.camera,
+                    framebuffer,
+                );
+            }
             self.draw_health_bar(
                 &enemy.body.collider,
                 &enemy.health,

@@ -508,6 +508,61 @@ impl Model {
                         .clamp_len(..=enemy.stats.acceleration * delta_time);
                     enemy.body.move_rotation();
                 }
+                EnemyAI::Shielder {
+                    preferred_distance,
+                    target,
+                } => {
+                    self.particles_queue.push(SpawnParticles {
+                        kind: ParticleKind::Shield,
+                        distribution: ParticleDistribution::Circle {
+                            center: enemy.body.collider.position,
+                            radius: r32(0.3),
+                        },
+                        density: r32(50.0) * delta_time,
+                        ..default()
+                    });
+
+                    let target = match target {
+                        Some(id) => {
+                            let mut target = self.enemies.get_mut(id);
+                            if let Some(target) = &mut target {
+                                target.invincibility.set_ratio(Time::ONE);
+                            }
+                            target
+                        }
+                        None => {
+                            let unit = self.enemies.iter_mut().min_by_key(|target| {
+                                (enemy.body.collider.position - target.body.collider.position).len()
+                            });
+                            if let Some(unit) = &unit {
+                                *target = Some(unit.id);
+                            }
+                            unit
+                        }
+                    };
+                    let target = target.map(|target| target.body.collider.position);
+                    let target = target.map_or_else(
+                        || {
+                            self.player.body.collider.position
+                                + (enemy.body.collider.position
+                                    - self.player.body.collider.position)
+                                    .normalize_or_zero()
+                                    * *preferred_distance
+                                    * r32(1.5)
+                        },
+                        |target| {
+                            target
+                                + (enemy.body.collider.position - target).normalize_or_zero()
+                                    * *preferred_distance
+                        },
+                    );
+                    let target_velocity = (target - enemy.body.collider.position)
+                        .normalize_or_zero()
+                        * enemy.stats.speed;
+                    enemy.body.velocity += (target_velocity - enemy.body.velocity)
+                        .clamp_len(..=enemy.stats.acceleration * delta_time);
+                    enemy.body.move_rotation();
+                }
                 EnemyAI::Pacman { pacman } => match &mut pacman.state {
                     PacmanState::Normal { spawn_1up, target } => {
                         if let Some((_, room)) = self
@@ -765,6 +820,10 @@ impl Model {
 
     pub fn damage_around(&mut self, drawing: Drawing, width: Coord, base_damage: Hp) {
         for enemy in &mut self.enemies {
+            if enemy.invincibility.is_above_min() {
+                continue;
+            }
+
             let Some(delta) =
                 delta_to_chain(enemy.body.collider.position, &drawing.points_smoothed)
             else {
