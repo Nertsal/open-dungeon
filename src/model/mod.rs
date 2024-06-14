@@ -190,6 +190,7 @@ pub struct Player {
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Weapon {
+    Whip,
     Dash,
     Bow,
 }
@@ -249,7 +250,7 @@ impl Model {
             player: Player {
                 health: Health::new_max(config.player.health),
                 body: PhysicsBody::new(vec2::ZERO, config.player.shape),
-                active_weapon: Weapon::Bow,
+                active_weapon: Weapon::Whip,
                 stats: config.player.clone(),
                 invincibility: Bounded::new_zero(
                     config

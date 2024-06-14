@@ -107,6 +107,7 @@ pub struct PlayerConfig {
     pub speed: Coord,
     pub acceleration: Coord,
     pub hurt_invincibility_time: Time,
+    pub whip: DrawConfig,
     pub dash: DrawConfig,
     pub bow: DrawConfig,
     pub shape: Shape,

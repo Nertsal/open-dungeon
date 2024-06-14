@@ -34,6 +34,7 @@ impl Model {
             + Angle::from_degrees(30.0).map(r32);
 
         let stats = match player.active_weapon {
+            Weapon::Whip => &mut player.stats.whip,
             Weapon::Dash => &mut player.stats.dash,
             Weapon::Bow => &mut player.stats.bow,
         };
@@ -150,6 +151,7 @@ impl Model {
 
         let player = &mut self.player;
         let stats = match player.active_weapon {
+            Weapon::Whip => &mut player.stats.whip,
             Weapon::Dash => &mut player.stats.dash,
             Weapon::Bow => &mut player.stats.bow,
         };
@@ -173,6 +175,7 @@ impl Model {
         stats.cooldown.set_ratio(Time::ONE);
 
         match player.active_weapon {
+            Weapon::Whip => {}
             Weapon::Dash => {
                 player.body.collider.position = last;
                 player.body.velocity = (last - prelast).normalize_or_zero() * stats.speed;
