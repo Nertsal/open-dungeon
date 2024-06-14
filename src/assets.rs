@@ -37,6 +37,12 @@ pub struct Sprites {
     pub heal: ugli::Texture,
     #[load(options(filter = "ugli::Filter::Nearest"))]
     pub skull: ugli::Texture,
+    #[load(options(filter = "ugli::Filter::Nearest"))]
+    pub whip: ugli::Texture,
+    #[load(options(filter = "ugli::Filter::Nearest"))]
+    pub dash: ugli::Texture,
+    #[load(options(filter = "ugli::Filter::Nearest"))]
+    pub bow: ugli::Texture,
 }
 
 #[derive(geng::asset::Load, Debug, Clone, Serialize, Deserialize)]
@@ -76,6 +82,7 @@ pub struct Controls {
 #[load(serde = "ron")]
 pub struct Config {
     pub starting_area: vec2<Coord>,
+    pub upgrades_per_level: usize,
     pub difficulty: DifficultyConfig,
     pub score: ScoreConfig,
     pub player: PlayerConfig,

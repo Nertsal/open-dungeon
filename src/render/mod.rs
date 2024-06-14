@@ -217,6 +217,11 @@ impl GameRender {
                 UpgradeEffect::Damage => &self.assets.sprites.damage,
                 UpgradeEffect::Speed => &self.assets.sprites.speed,
                 UpgradeEffect::Difficulty => &self.assets.sprites.skull,
+                UpgradeEffect::Weapon(weapon) => match weapon {
+                    Weapon::Whip => &self.assets.sprites.whip,
+                    Weapon::Dash => &self.assets.sprites.dash,
+                    Weapon::Bow => &self.assets.sprites.bow,
+                },
             };
 
             let pos = upgrade.collider.compute_aabb().center().as_f32();

@@ -136,6 +136,7 @@ pub enum UpgradeEffect {
     Speed,
     // Heal,
     Difficulty,
+    Weapon(Weapon),
 }
 
 #[derive(Debug, Clone)]

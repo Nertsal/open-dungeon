@@ -219,14 +219,17 @@ impl Model {
     pub fn collect_upgrade(&mut self, upgrade: Upgrade) {
         match upgrade.effect {
             UpgradeEffect::Width => {
+                self.player.stats.whip.width += r32(0.5);
                 self.player.stats.dash.width += r32(0.5);
                 self.player.stats.bow.width += r32(0.5);
             }
             UpgradeEffect::Range => {
+                self.player.stats.whip.max_distance += r32(3.0);
                 self.player.stats.dash.max_distance += r32(3.0);
                 self.player.stats.bow.max_distance += r32(3.0);
             }
             UpgradeEffect::Damage => {
+                self.player.stats.whip.damage += r32(5.0);
                 self.player.stats.dash.damage += r32(5.0);
                 self.player.stats.bow.damage += r32(5.0);
             }
@@ -237,6 +240,9 @@ impl Model {
             UpgradeEffect::Difficulty => {
                 self.difficulty += self.config.difficulty.upgrade_amount;
                 self.score_multiplier += self.config.score.upgrade_multiplier;
+            }
+            UpgradeEffect::Weapon(weapon) => {
+                self.player.active_weapon = weapon;
             }
         };
         self.particles_queue.push(SpawnParticles {
@@ -333,20 +339,28 @@ impl Model {
         self.pacman_1ups.clear();
 
         let mut rng = thread_rng();
-        let options = [
+        let mut options = vec![
             UpgradeEffect::Width,
             UpgradeEffect::Range,
             UpgradeEffect::Damage,
             UpgradeEffect::Speed,
             UpgradeEffect::Difficulty,
         ];
-        let options: Vec<_> = options.choose_multiple(&mut rng, 2).collect();
+        options.extend(
+            [Weapon::Whip, Weapon::Dash, Weapon::Bow]
+                .into_iter()
+                .filter(|weapon| *weapon != self.player.active_weapon)
+                .map(UpgradeEffect::Weapon),
+        );
+        let options: Vec<_> = options
+            .choose_multiple(&mut rng, self.config.upgrades_per_level)
+            .collect();
         let upgrades = options.iter().enumerate().map(|(i, effect)| Upgrade {
             collider: Collider::new(
                 room.area.center() + offset * r32(i as f32 - (options.len() as f32 - 1.0) / 2.0),
                 Shape::circle(0.5),
             ),
-            effect: (**effect).clone(),
+            effect: (*effect).clone(),
         });
         self.upgrades.extend(upgrades);
 
