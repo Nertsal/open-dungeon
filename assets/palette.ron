@@ -1,0 +1,20 @@
+// <https://lospec.com/palette-list/bornana-12>
+Palette(
+    background: "#01061c",
+    text: "#e6c081",
+    room: "#031b30",
+    wall: "#fdffcf",
+    wall_block: "#e8985f",
+    player: "#fdffcf",
+    minion: "#e6c081",
+    object: "#234a57",
+    enemy: "#eaf257",
+    health: "#b52d6d",
+    drawing: "#e6c081",
+    dash: "#fdffcf",
+    damage: "#b52d6d",
+    collision: "#eaf257",
+    upgrade: "#19705a",
+    pacman_1up: "#2dad6b",
+    idk: "#8fcc49",
+)
