@@ -27,7 +27,7 @@ fn main() {
 
     let mut options = geng::ContextOptions::default();
     options.with_cli(&opts.geng);
-    options.window.title = "Open Island".into();
+    options.window.title = "Open Dungeon".into();
     options.fixed_delta_time = 1.0 / FIXED_FPS;
 
     Geng::run_with(&options, |geng| async move {
