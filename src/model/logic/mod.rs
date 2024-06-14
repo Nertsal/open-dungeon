@@ -707,30 +707,16 @@ impl Model {
                                 if delta.len_sqr() < r32(1.0) {
                                     if rng.gen_bool(0.3) {
                                         // Minions
-                                        let tank = EnemyConfig {
-                                            cost: None,
-                                            score: Some(200),
-                                            mass: None,
-                                            health: r32(23.0),
-                                            damage: r32(10.0),
-                                            speed: r32(2.0),
-                                            acceleration: r32(30.0),
-                                            shape: Shape::square(1.1),
-                                            ai: EnemyAI::Crawler,
-                                        };
-                                        let circle = EnemyConfig {
-                                            cost: None,
-                                            score: Some(50),
-                                            mass: None,
-                                            health: r32(6.0),
-                                            damage: r32(5.0),
-                                            speed: r32(3.0),
-                                            acceleration: r32(5.0),
-                                            shape: Shape::circle(0.4),
-                                            ai: EnemyAI::Crawler,
-                                        };
+                                        let tank = &self.config.enemies["tank"];
+                                        let circle = &self.config.enemies["circle"];
+                                        let shielder = &self.config.enemies["shielder"];
                                         helicopter.state = HelicopterState::Minions {
-                                            minions: vec![tank, circle.clone(), circle],
+                                            minions: vec![
+                                                tank.clone(),
+                                                shielder.clone(),
+                                                circle.clone(),
+                                                circle.clone(),
+                                            ],
                                             delay: Bounded::new_max(r32(0.5)),
                                         };
                                     } else {
@@ -783,7 +769,6 @@ impl Model {
                                     delay.set_ratio(Time::ONE);
 
                                     if let Some(minion) = minions.pop() {
-                                        helicopter.state = HelicopterState::Idle;
                                         self.spawn_queue.push(Enemy::new(
                                             self.id_gen.gen(),
                                             EnemyConfig {
@@ -794,6 +779,8 @@ impl Model {
                                             },
                                             enemy.body.collider.position,
                                         ));
+                                    } else {
+                                        helicopter.state = HelicopterState::Idle;
                                     }
                                 }
                             }
