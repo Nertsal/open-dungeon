@@ -37,8 +37,8 @@ Config(
         shape: Triangle( height: 0.8 ),
         shield: Circle ( radius: 0.5 ),
     ),
-    enemies: [
-        EnemyConfig(
+    enemies: {
+        "circle": EnemyConfig(
             cost: 1.0,
             score: 50,
             health: 7.0,
@@ -48,7 +48,7 @@ Config(
             shape: Circle( radius: 0.4 ),
             ai: Crawler,
         ),
-        EnemyConfig(
+        "small_tank": EnemyConfig(
             cost: 3.0,
             score: 100,
             health: 12.0,
@@ -58,7 +58,17 @@ Config(
             shape: Rectangle( width: 0.9, height: 0.9 ),
             ai: Crawler,
         ),
-        EnemyConfig(
+        "tank": EnemyConfig(
+            cost: 7.0,
+            score: 300,
+            health: 23.0,
+            damage: 10.0,
+            speed: 2.0,
+            acceleration: 5.0,
+            shape: Rectangle( width: 1.1, height: 1.1 ),
+            ai: Crawler,
+        ),
+        "summoner": EnemyConfig(
             cost: 5.0,
             score: 200,
             health: 16.0,
@@ -80,37 +90,39 @@ Config(
                 ),
             ),
         ),
-    ],
+        "pacman": EnemyConfig(
+            score: 4000,
+            health: 200.0,
+            damage: 20.0,
+            speed: 5.0,
+            acceleration: 100.0,
+            shape: Circle ( radius: 1.0 ),
+            ai: Pacman ( ),
+        ),
+        "helicopter": EnemyConfig(
+            score: 9000,
+            mass: 100.0,
+            health: 300.0,
+            damage: 50.0,
+            speed: 20.0,
+            acceleration: 8.0,
+            shape: Circle ( radius: 1.5 ),
+            ai: Helicopter ( ),
+        ),
+    },
     bosses: [
         BossConfig(
             room: 5,
             room_size: ( 30.0, 30.0 ),
             enemies: [
-                EnemyConfig(
-                    score: 4000,
-                    health: 200.0,
-                    damage: 20.0,
-                    speed: 5.0,
-                    acceleration: 100.0,
-                    shape: Circle ( radius: 1.0 ),
-                    ai: Pacman ( ),
-                ),
+                "pacman",
             ],
         ),
         BossConfig(
             room: 10,
             room_size: ( 30.0, 30.0 ),
             enemies: [
-                EnemyConfig(
-                    score: 9000,
-                    mass: 100.0,
-                    health: 300.0,
-                    damage: 50.0,
-                    speed: 20.0,
-                    acceleration: 8.0,
-                    shape: Circle ( radius: 1.5 ),
-                    ai: Helicopter ( ),
-                ),
+                "helicopter",
             ],
         ),
     ]

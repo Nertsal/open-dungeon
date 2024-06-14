@@ -936,6 +936,10 @@ impl Model {
         {
             // Boss room
             for enemy in &boss.enemies {
+                let Some(enemy) = self.config.enemies.get(enemy) else {
+                    log::error!("Enemy named {enemy:?} not found");
+                    continue;
+                };
                 spawn_enemy(enemy, &mut difficulty, &mut rng);
             }
             return;
@@ -944,7 +948,7 @@ impl Model {
         while let Some(config) = self
             .config
             .enemies
-            .iter()
+            .values()
             .filter(|config| config.cost.map_or(false, |cost| cost <= difficulty))
             .choose(&mut rng)
         {

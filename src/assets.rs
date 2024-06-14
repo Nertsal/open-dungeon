@@ -79,7 +79,7 @@ pub struct Config {
     pub difficulty: DifficultyConfig,
     pub score: ScoreConfig,
     pub player: PlayerConfig,
-    pub enemies: Vec<EnemyConfig>,
+    pub enemies: HashMap<String, EnemyConfig>,
     pub bosses: Vec<BossConfig>,
 }
 
@@ -139,5 +139,5 @@ pub struct DrawConfig {
 pub struct BossConfig {
     pub room: usize,
     pub room_size: vec2<Coord>,
-    pub enemies: Vec<EnemyConfig>,
+    pub enemies: Vec<String>,
 }
