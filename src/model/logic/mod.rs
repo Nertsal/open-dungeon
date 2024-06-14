@@ -821,7 +821,9 @@ impl Model {
             };
 
             // TODO: maybe account for collider shape or size
-            if delta.len() < width {
+            let enemy_radius = enemy.body.collider.compute_aabb().size().len()
+                / r32(std::f32::consts::SQRT_2 * 2.0);
+            if delta.len() < width + enemy_radius {
                 enemy.health.change(-base_damage); // TODO: combo scaling
 
                 let size = enemy.body.collider.compute_aabb().size();
