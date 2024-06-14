@@ -14,4 +14,5 @@ parry2d = "0.15.1"
 serde = { version = "1.0.203", features = ["derive"] }
 
 [patch.crates-io]
+async-broadcast = { git = "https://github.com/kuviman/async-broadcast", branch = "fix-wasm" } # TODO: until https://github.com/smol-rs/async-broadcast/pull/47 is merged
 geng = { git = "https://github.com/geng-engine/geng", rev = "38a550f6389d8b2720fefd2f42b5fb58fba106c2" }
