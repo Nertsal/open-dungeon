@@ -21,6 +21,7 @@ Config(
         acceleration: 50.0,
         hurt_invincibility_time: 0.5,
         dash: DrawConfig(
+            cooldown: (value: 0.0, min: 0.0, max: 0.3),
             max_distance: 7.0,
             speed: 10.0,
             width: 0.6,
@@ -28,6 +29,7 @@ Config(
             invincibility_time: 0.2,
         ),
         bow: DrawConfig(
+            cooldown: (value: 0.0, min: 0.0, max: 0.5),
             max_distance: 5.0,
             speed: 10.0,
             width: 0.5,

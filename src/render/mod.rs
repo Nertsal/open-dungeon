@@ -262,6 +262,7 @@ impl GameRender {
             let transform = mat3::scale_uniform(t);
             let mut color = match particle.kind {
                 ParticleKind::Draw => self.assets.palette.dash,
+                ParticleKind::Drawing => self.assets.palette.drawing,
                 ParticleKind::WallBreakable => self.assets.palette.wall,
                 ParticleKind::WallBlock => self.assets.palette.wall_block,
                 ParticleKind::Bounce => self.assets.palette.collision,

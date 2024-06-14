@@ -128,6 +128,7 @@ pub struct EnemyConfig {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct DrawConfig {
+    pub cooldown: Bounded<Time>,
     pub max_distance: Coord,
     pub speed: Coord,
     pub width: Coord,

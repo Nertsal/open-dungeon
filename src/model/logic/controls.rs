@@ -33,10 +33,31 @@ impl Model {
         player.body.collider.rotation = (self.cursor_pos - player.body.collider.position).arg()
             + Angle::from_degrees(30.0).map(r32);
 
+        let stats = match player.active_weapon {
+            Weapon::Dash => &mut player.stats.dash,
+            Weapon::Bow => &mut player.stats.bow,
+        };
+        let ready = stats.cooldown.is_min();
+        stats.cooldown.change(-delta_time);
+        if !ready && stats.cooldown.is_min() {
+            self.particles_queue.push(SpawnParticles {
+                kind: ParticleKind::Drawing,
+                distribution: ParticleDistribution::Circle {
+                    center: player.body.collider.position,
+                    radius: r32(0.7),
+                },
+                ..default()
+            });
+        }
+
         match input.drawing {
             Some(position) => {
                 // Drawing
                 if player.draw_action.is_none() {
+                    if stats.cooldown.is_above_min() {
+                        return;
+                    }
+
                     player.draw_action = Some(Drawing {
                         points_raw: vec![DrawPoint {
                             position: player.body.collider.position,
@@ -129,8 +150,8 @@ impl Model {
 
         let player = &mut self.player;
         let stats = match player.active_weapon {
-            Weapon::Dash => &player.stats.dash,
-            Weapon::Bow => &player.stats.bow,
+            Weapon::Dash => &mut player.stats.dash,
+            Weapon::Bow => &mut player.stats.bow,
         };
 
         let expand_room = can_expand
@@ -149,6 +170,7 @@ impl Model {
             .unwrap();
 
         player.invincibility.set(stats.invincibility_time);
+        stats.cooldown.set_ratio(Time::ONE);
 
         match player.active_weapon {
             Weapon::Dash => {
