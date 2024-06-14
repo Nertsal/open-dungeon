@@ -173,7 +173,10 @@ impl Model {
                 let bounciness = r32(0.8);
                 player.body.collider.position -= collision.normal * collision.penetration;
                 let projection = vec2::dot(player.body.velocity, collision.normal);
-                player.body.velocity -= collision.normal * projection * (Coord::ONE + bounciness);
+                if projection > r32(0.0) {
+                    player.body.velocity -=
+                        collision.normal * projection * (Coord::ONE + bounciness);
+                }
                 if projection > r32(1.0) {
                     self.events.push(Event::Sound(SoundEvent::Bounce));
                 }
@@ -202,8 +205,10 @@ impl Model {
                     let bounciness = r32(0.8);
                     enemy.body.collider.position -= collision.normal * collision.penetration;
                     let projection = vec2::dot(enemy.body.velocity, collision.normal);
-                    enemy.body.velocity -=
-                        collision.normal * projection * (Coord::ONE + bounciness);
+                    if projection > r32(0.0) {
+                        enemy.body.velocity -=
+                            collision.normal * projection * (Coord::ONE + bounciness);
+                    }
                     if projection > r32(1.0) {
                         self.events.push(Event::Sound(SoundEvent::Bounce));
                     }
