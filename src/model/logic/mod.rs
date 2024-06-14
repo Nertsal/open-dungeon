@@ -391,6 +391,9 @@ impl Model {
                 log::error!("enemy killed before it could control itself");
                 continue;
             };
+
+            enemy.invincibility.change(-delta_time);
+
             match &mut enemy.ai {
                 EnemyAI::Idle => {
                     let drag = r32(0.9);

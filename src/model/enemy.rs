@@ -112,7 +112,7 @@ pub enum HelicopterState {
 impl Default for HelicopterAI {
     fn default() -> Self {
         Self {
-            oscilate: Bounded::new_zero(r32(7.0)),
+            oscilate: Bounded::new_zero(r32(3.0)),
             state: HelicopterState::Idle,
             minigun_bullet: Box::new(EnemyConfig {
                 cost: None,
