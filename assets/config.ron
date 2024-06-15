@@ -52,6 +52,10 @@ Config(
         "circle": EnemyConfig(
             cost: 1.0,
             score: 50,
+            grouping: EnemyGrouping(
+                cost: 5.0,
+                chance: 0.3,
+            ),
             health: 7.0,
             damage: 5.0,
             speed: 3.0,
