@@ -60,6 +60,11 @@ impl GameRender {
 
         // Enemies
         for enemy in &model.enemies {
+            let hit_t = ((model.game_time - enemy.last_hit).as_f32() / 0.5).min(1.0);
+            let hit_t = (1.0 - hit_t) * 2.5 + 1.0;
+            let hit_color = Rgba::<f32>::WHITE.map_rgb(|x| x * hit_t);
+            let color = self.assets.palette.enemy * hit_color;
+
             match &enemy.ai {
                 EnemyAI::Pacman { pacman } => {
                     let radius = enemy.body.collider.compute_aabb().size().len().as_f32()
@@ -88,7 +93,7 @@ impl GameRender {
                         framebuffer,
                         &model.camera,
                         &vertices,
-                        self.assets.palette.enemy,
+                        color,
                         ugli::DrawMode::TriangleFan,
                     );
                 }
@@ -105,7 +110,7 @@ impl GameRender {
                         center,
                         radius - 0.1,
                         radius,
-                        self.assets.palette.enemy,
+                        color,
                     );
 
                     let direction = (model.player.body.collider.position
@@ -120,22 +125,14 @@ impl GameRender {
                     self.geng.draw2d().draw2d(
                         framebuffer,
                         &model.camera,
-                        &draw2d::Segment::new(
-                            Segment(a, b),
-                            radius * 0.1,
-                            self.assets.palette.enemy,
-                        ),
+                        &draw2d::Segment::new(Segment(a, b), radius * 0.1, color),
                     );
                     let a = b + vec2(0.0, radius * 0.3);
                     let b = b - vec2(0.0, radius * 0.3);
                     self.geng.draw2d().draw2d(
                         framebuffer,
                         &model.camera,
-                        &draw2d::Segment::new(
-                            Segment(a, b),
-                            radius * 0.1,
-                            self.assets.palette.enemy,
-                        ),
+                        &draw2d::Segment::new(Segment(a, b), radius * 0.1, color),
                     );
 
                     // Blades
@@ -152,11 +149,7 @@ impl GameRender {
                         self.geng.draw2d().draw2d(
                             framebuffer,
                             &model.camera,
-                            &draw2d::Segment::new(
-                                Segment(a, b),
-                                radius * 0.15,
-                                self.assets.palette.enemy,
-                            ),
+                            &draw2d::Segment::new(Segment(a, b), radius * 0.15, color),
                         );
                     }
 
@@ -168,21 +161,11 @@ impl GameRender {
                     self.geng.draw2d().draw2d(
                         framebuffer,
                         &model.camera,
-                        &draw2d::Segment::new(
-                            Segment(a, b),
-                            radius * 0.15,
-                            self.assets.palette.enemy,
-                        ),
+                        &draw2d::Segment::new(Segment(a, b), radius * 0.15, color),
                     );
                 }
                 _ => {
-                    self.draw_outline(
-                        &enemy.body.collider,
-                        0.1,
-                        self.assets.palette.enemy,
-                        &model.camera,
-                        framebuffer,
-                    );
+                    self.draw_outline(&enemy.body.collider, 0.1, color, &model.camera, framebuffer);
                 }
             }
             if enemy.invincibility.is_above_min() {

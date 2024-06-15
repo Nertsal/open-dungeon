@@ -859,6 +859,7 @@ impl Model {
                 / r32(std::f32::consts::SQRT_2 * 2.0);
             if delta.len() < width + enemy_radius {
                 enemy.health.change(-base_damage); // TODO: combo scaling
+                enemy.last_hit = self.game_time;
 
                 let size = enemy.body.collider.compute_aabb().size();
                 self.particles_queue.push(SpawnParticles {

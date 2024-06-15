@@ -4,6 +4,7 @@ use super::*;
 pub struct Enemy {
     pub id: Id,
     pub health: Health,
+    pub last_hit: Time,
     pub invincibility: Bounded<Time>,
     pub body: PhysicsBody,
     pub attached_to: Option<(Id, vec2<Coord>)>,
@@ -18,6 +19,7 @@ impl Enemy {
         Self {
             id,
             health: Bounded::new_max(config.health),
+            last_hit: r32(-999.0),
             invincibility: Bounded::new_zero(r32(0.5)),
             body,
             attached_to: None,
