@@ -8,7 +8,13 @@ impl Model {
     pub fn update(&mut self, input: PlayerControls, delta_time: Time) {
         self.real_time += delta_time;
         self.game_time += delta_time;
-        self.difficulty += self.config.difficulty.time_scaling * delta_time;
+
+        if !self.rooms.contains(Index::from_raw_parts(0, 0)) || self.rooms.len() > 1 {
+            // Exited the starting room
+            self.difficulty_raw += self.config.difficulty.time_scaling * delta_time;
+            let difficulty_step = r32(5.0);
+            self.difficulty = (self.difficulty_raw / difficulty_step).floor() * difficulty_step;
+        }
 
         if self.player.draw_action.is_some() {
             self.events.push(Event::Sound(SoundEvent::Drawing));
@@ -243,7 +249,7 @@ impl Model {
                 self.player.stats.acceleration += r32(5.0);
             }
             UpgradeEffect::Difficulty => {
-                self.difficulty += self.config.difficulty.upgrade_amount;
+                self.difficulty_raw += self.config.difficulty.upgrade_amount;
                 self.score_multiplier += self.config.score.upgrade_multiplier;
             }
             UpgradeEffect::Weapon(weapon) => {
@@ -370,7 +376,7 @@ impl Model {
         self.upgrades.extend(upgrades);
 
         self.rooms_cleared += 1;
-        self.difficulty += self.config.difficulty.room_bonus
+        self.difficulty_raw += self.config.difficulty.room_bonus
             * self
                 .config
                 .difficulty

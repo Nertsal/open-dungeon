@@ -312,7 +312,7 @@ impl GameRender {
         color: Rgba<f32>,
         framebuffer: &mut ugli::Framebuffer,
     ) {
-        let size = texture.size().as_f32(); // * pixel_scale(framebuffer);
+        let size = texture.size().as_f32() * pixel_scale(framebuffer);
         let pos = geng_utils::layout::align_aabb(size, quad, vec2(0.5, 0.5));
         self.geng.draw2d().textured_quad(
             framebuffer,
@@ -324,16 +324,80 @@ impl GameRender {
     }
 
     pub fn draw_ui(&self, model: &Model, framebuffer: &mut ugli::Framebuffer) {
+        let frame_view = framebuffer.size().as_f32();
+        let game_view = vec2(framebuffer.size().as_f32().aspect(), 1.0) * model.camera.fov / 2.0;
+
         // Score
+        let pos = model.camera.center + vec2(0.0, game_view.y * 0.9);
         self.geng.default_font().draw(
             framebuffer,
             &model.camera,
             &format!("SCORE: {}", model.score),
             vec2::splat(geng::TextAlign::CENTER),
-            mat3::translate(model.camera.center + vec2(0.0, model.camera.fov / 2.0 * 0.9))
-                * mat3::scale_uniform(1.5),
+            mat3::translate(pos) * mat3::scale_uniform(1.5),
             self.assets.palette.text,
-        )
+        );
+        if model.score_multiplier != R32::ONE {
+            self.geng.default_font().draw(
+                framebuffer,
+                &model.camera,
+                &format!("x{:.1}", model.score_multiplier),
+                vec2::splat(geng::TextAlign::CENTER),
+                mat3::translate(pos - vec2(0.0, 1.5)) * mat3::scale_uniform(1.2),
+                self.assets.palette.text,
+            );
+        }
+
+        // Difficulty icon
+        let pos = vec2(0.95, 0.95) * frame_view;
+        let steps = [15.0, 35.0];
+        let diff = model.difficulty.as_f32();
+        let raw = model.difficulty_raw.as_f32();
+        let (texture, next) = if diff < steps[0] {
+            (
+                &self.assets.sprites.easy,
+                Some(Bounded::new(
+                    raw,
+                    model.config.difficulty.initial.as_f32()..=steps[0],
+                )),
+            )
+        } else if diff < steps[1] {
+            (
+                &self.assets.sprites.medium,
+                Some(Bounded::new(raw, steps[0]..=steps[1])),
+            )
+        } else {
+            (&self.assets.sprites.hard, None)
+        };
+        self.draw_texture(
+            Aabb2::point(pos),
+            texture,
+            self.assets.palette.text,
+            framebuffer,
+        );
+
+        // Difficulty bar
+        if let Some(fill_t) = next {
+            let scale = pixel_scale(framebuffer);
+            let bar = Aabb2::point(pos - vec2(0.0, scale * 15.0))
+                .extend_symmetric(vec2(13.0, 3.0) * scale);
+            self.geng.draw2d().quad(
+                framebuffer,
+                &geng::PixelPerfectCamera,
+                bar,
+                self.assets.palette.room,
+            );
+
+            let fill = bar.extend_uniform(-scale * 0.5);
+            let fill_t = fill_t.get_ratio();
+            let fill = fill.extend_right((fill_t - 1.0) * fill.width());
+            self.geng.draw2d().quad(
+                framebuffer,
+                &geng::PixelPerfectCamera,
+                fill,
+                self.assets.palette.text,
+            );
+        }
     }
 
     pub fn draw_collider(
@@ -493,4 +557,8 @@ impl GameRender {
             }
         }
     }
+}
+
+fn pixel_scale(framebuffer: &ugli::Framebuffer) -> f32 {
+    framebuffer.size().y as f32 / crate::GAME_RESOLUTION.y as f32
 }

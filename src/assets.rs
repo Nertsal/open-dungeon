@@ -43,6 +43,12 @@ pub struct Sprites {
     pub dash: ugli::Texture,
     #[load(options(filter = "ugli::Filter::Nearest"))]
     pub bow: ugli::Texture,
+    #[load(options(filter = "ugli::Filter::Nearest"))]
+    pub easy: ugli::Texture,
+    #[load(options(filter = "ugli::Filter::Nearest"))]
+    pub medium: ugli::Texture,
+    #[load(options(filter = "ugli::Filter::Nearest"))]
+    pub hard: ugli::Texture,
 }
 
 #[derive(geng::asset::Load, Debug, Clone, Serialize, Deserialize)]

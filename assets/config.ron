@@ -14,7 +14,7 @@ Config(
     ),
     score: ScoreConfig(
         room_bonus: 1000,
-        upgrade_multiplier: 1.1,
+        upgrade_multiplier: 0.5,
     ),
     player: PlayerConfig(
         health: 50.0,
@@ -157,14 +157,14 @@ Config(
     },
     bosses: [
         BossConfig(
-            room: 5,
+            room: 10,
             room_size: ( 30.0, 30.0 ),
             enemies: [
                 "pacman",
             ],
         ),
         BossConfig(
-            room: 10,
+            room: 15,
             room_size: ( 30.0, 30.0 ),
             enemies: [
                 "helicopter",
