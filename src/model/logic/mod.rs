@@ -12,7 +12,7 @@ impl Model {
         if !self.rooms.contains(Index::from_raw_parts(0, 0)) || self.rooms.len() > 1 {
             // Exited the starting room
             self.difficulty_raw += self.config.difficulty.time_scaling * delta_time;
-            let difficulty_step = r32(5.0);
+            let difficulty_step = r32(1.0);
             self.difficulty = (self.difficulty_raw / difficulty_step).floor() * difficulty_step;
         }
 
@@ -164,7 +164,9 @@ impl Model {
                         MinionAI::Bullet { damage, .. } => {
                             // NOTE: explosion managed on death
                             minion.health.set_ratio(Hp::ZERO);
-                            enemy.health.change(-damage);
+                            if enemy.invincibility.is_min() {
+                                enemy.health.change(-damage);
+                            }
                             self.events.push(Event::Sound(SoundEvent::Hit));
                         }
                     }
@@ -232,7 +234,7 @@ impl Model {
             UpgradeEffect::Width => {
                 self.player.stats.whip.width += r32(0.5);
                 self.player.stats.dash.width += r32(0.5);
-                self.player.stats.bow.width += r32(0.5);
+                self.player.stats.bow.width += r32(0.2);
             }
             UpgradeEffect::Range => {
                 self.player.stats.whip.max_distance += r32(3.0);
@@ -240,13 +242,13 @@ impl Model {
                 self.player.stats.bow.max_distance += r32(3.0);
             }
             UpgradeEffect::Damage => {
-                self.player.stats.whip.damage += r32(5.0);
-                self.player.stats.dash.damage += r32(5.0);
-                self.player.stats.bow.damage += r32(5.0);
+                self.player.stats.whip.damage += r32(3.0);
+                self.player.stats.dash.damage += r32(3.0);
+                self.player.stats.bow.damage += r32(3.0);
             }
             UpgradeEffect::Speed => {
-                self.player.stats.speed += r32(2.0);
-                self.player.stats.acceleration += r32(5.0);
+                self.player.stats.speed += r32(1.0);
+                self.player.stats.acceleration += r32(2.5);
             }
             UpgradeEffect::Difficulty => {
                 self.difficulty_raw += self.config.difficulty.upgrade_amount;
@@ -281,7 +283,8 @@ impl Model {
                             Shape::circle(explosion_radius),
                         );
                         for enemy in &mut self.enemies {
-                            if explosion.check(&enemy.body.collider) {
+                            if enemy.invincibility.is_min() && explosion.check(&enemy.body.collider)
+                            {
                                 enemy.health.change(-explosion_damage);
                             }
                         }
@@ -666,7 +669,7 @@ impl Model {
                                 let eat = up.collider.check(&enemy.body.collider);
                                 if eat {
                                     pacman.state = PacmanState::Power {
-                                        timer: Bounded::new_max(r32(5.0)),
+                                        timer: Bounded::new_max(r32(3.0)),
                                     };
                                 }
                                 !eat
@@ -692,7 +695,7 @@ impl Model {
                         timer.change(-delta_time);
                         if timer.is_min() {
                             pacman.state = PacmanState::Normal {
-                                spawn_1up: Bounded::new_max(r32(7.0)),
+                                spawn_1up: Bounded::new(r32(1.0), r32(0.0)..=r32(5.0)),
                                 target: None,
                             };
                         }
@@ -768,17 +771,23 @@ impl Model {
                                 if shot_delay.is_min() {
                                     shot_delay.set_ratio(Time::ONE);
 
-                                    let mut bullet = Enemy::new(
-                                        self.id_gen.gen(),
-                                        (*helicopter.minigun_bullet).clone(),
-                                        enemy.body.collider.position,
-                                    );
-                                    let dir = (self.player.body.collider.position
-                                        - enemy.body.collider.position)
-                                        .normalize_or_zero();
-                                    bullet.body.velocity = dir * bullet.stats.speed;
-                                    self.spawn_queue.push(bullet);
-                                    self.events.push(Event::Sound(SoundEvent::Minigun));
+                                    let center = enemy.body.collider.position;
+                                    let poss = [
+                                        center + vec2(1.3, 0.0).as_r32(),
+                                        center - vec2(1.3, 0.0).as_r32(),
+                                    ];
+                                    for pos in poss {
+                                        let mut bullet = Enemy::new(
+                                            self.id_gen.gen(),
+                                            (*helicopter.minigun_bullet).clone(),
+                                            pos,
+                                        );
+                                        let target = self.player.body.collider.position;
+                                        let dir = (target - pos).normalize_or_zero();
+                                        bullet.body.velocity = dir * bullet.stats.speed;
+                                        self.spawn_queue.push(bullet);
+                                        self.events.push(Event::Sound(SoundEvent::Minigun));
+                                    }
                                 }
 
                                 // Update timer
