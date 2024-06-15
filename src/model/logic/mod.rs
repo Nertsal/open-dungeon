@@ -393,6 +393,19 @@ impl Model {
             };
 
             enemy.invincibility.change(-delta_time);
+            let repel_force = self
+                .enemies
+                .iter()
+                .map(|other| {
+                    let delta = enemy.body.collider.position - other.body.collider.position;
+                    let len = delta.len();
+                    if len.approx_eq(&Coord::ZERO) {
+                        vec2::ZERO
+                    } else {
+                        delta / len.powi(3)
+                    }
+                })
+                .fold(vec2::ZERO, vec2::add);
 
             match &mut enemy.ai {
                 EnemyAI::Idle => {
@@ -405,7 +418,7 @@ impl Model {
                 }
                 EnemyAI::Crawler => {
                     let target = self.player.body.collider.position;
-                    let target_velocity = (target - enemy.body.collider.position)
+                    let target_velocity = (target - enemy.body.collider.position + repel_force)
                         .normalize_or_zero()
                         * enemy.stats.speed;
                     enemy.body.velocity += (target_velocity - enemy.body.velocity)
@@ -1073,10 +1086,11 @@ impl Model {
         let mut difficulty = self.difficulty;
 
         let find_position = |rng: &mut ThreadRng| -> Option<Position> {
+            let area = room.area.extend_uniform(-r32(3.0));
             for _ in 0..50 {
                 let position = vec2(
-                    rng.gen_range(room.area.min.x..=room.area.max.x),
-                    rng.gen_range(room.area.min.y..=room.area.max.y),
+                    rng.gen_range(area.min.x..=area.max.x),
+                    rng.gen_range(area.min.y..=area.max.y),
                 );
                 if (self.player.body.collider.position - position).len() > r32(5.0) {
                     return Some(position);
