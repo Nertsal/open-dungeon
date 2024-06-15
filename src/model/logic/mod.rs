@@ -815,10 +815,12 @@ impl Model {
                         enemy.body.velocity = vel;
                         other.body.velocity = vel;
 
-                        let off =
-                            offset - (enemy.body.collider.position - other.body.collider.position);
+                        let delta = enemy.body.collider.position - other.body.collider.position;
+                        let off = offset - delta;
                         enemy.body.collider.position += off / r32(2.0);
                         other.body.collider.position -= off / r32(2.0);
+                        enemy.body.collider.rotation = delta.arg();
+                        other.body.collider.rotation = (-delta).arg();
                     }
                 }
             }
@@ -1161,7 +1163,28 @@ impl Model {
                                 }
                             }
                             Shape::Rectangle { .. } => {
-                                // TODO
+                                // 3x3 square
+                                let poss = [
+                                    (-1, 1),
+                                    (0, 1),
+                                    (1, 1),
+                                    (1, 0),
+                                    (1, -1),
+                                    (0, -1),
+                                    (-1, -1),
+                                    (-1, 0),
+                                ];
+                                let mut prev = None;
+                                for (x, y) in poss {
+                                    let position = position + vec2(x, y).as_r32();
+                                    let mut enemy = spawn_enemy(config, position);
+                                    if let Some((prev, prev_pos)) = prev {
+                                        enemy.attached_to =
+                                            Some((prev, enemy.body.collider.position - prev_pos));
+                                    }
+                                    prev = Some((enemy.id, enemy.body.collider.position));
+                                    self.enemies.insert(enemy);
+                                }
                             }
                             Shape::Triangle { .. } => {
                                 // TODO
