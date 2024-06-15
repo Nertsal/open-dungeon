@@ -553,9 +553,14 @@ impl Model {
                             target
                         }
                         None => {
-                            let unit = self.enemies.iter_mut().min_by_key(|target| {
-                                (enemy.body.collider.position - target.body.collider.position).len()
-                            });
+                            let unit = self
+                                .enemies
+                                .iter_mut()
+                                .filter(|target| !matches!(target.ai, EnemyAI::Shielder { .. }))
+                                .min_by_key(|target| {
+                                    (enemy.body.collider.position - target.body.collider.position)
+                                        .len()
+                                });
                             if let Some(unit) = &unit {
                                 *target = Some(unit.id);
                             }
