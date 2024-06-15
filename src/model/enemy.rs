@@ -6,6 +6,7 @@ pub struct Enemy {
     pub health: Health,
     pub invincibility: Bounded<Time>,
     pub body: PhysicsBody,
+    pub attached_to: Option<(Id, vec2<Coord>)>,
     pub stats: EnemyConfig,
     pub ai: EnemyAI,
 }
@@ -19,6 +20,7 @@ impl Enemy {
             health: Bounded::new_max(config.health),
             invincibility: Bounded::new_zero(r32(0.5)),
             body,
+            attached_to: None,
             ai: config.ai.clone(),
             stats: config,
         }
@@ -117,6 +119,7 @@ impl Default for HelicopterAI {
             minigun_bullet: Box::new(EnemyConfig {
                 cost: None,
                 score: None,
+                grouping: None,
                 mass: None,
                 health: r32(1.0),
                 damage: r32(5.0),

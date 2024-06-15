@@ -791,6 +791,25 @@ impl Model {
 
             enemy.body.collider.position += enemy.body.velocity * delta_time;
             enemy.body.collider.rotation += enemy.body.angular_velocity * delta_time;
+
+            if let Some((id, offset)) = enemy.attached_to {
+                match self.enemies.get_mut(&id) {
+                    None => {
+                        enemy.attached_to = None;
+                    }
+                    Some(other) => {
+                        let vel = (enemy.body.velocity + other.body.velocity) / r32(2.0);
+                        enemy.body.velocity = vel;
+                        other.body.velocity = vel;
+
+                        let off =
+                            offset - (enemy.body.collider.position - other.body.collider.position);
+                        enemy.body.collider.position += off / r32(2.0);
+                        other.body.collider.position -= off / r32(2.0);
+                    }
+                }
+            }
+
             self.enemies.insert(enemy);
         }
     }
@@ -1053,28 +1072,29 @@ impl Model {
         let mut rng = thread_rng();
         let mut difficulty = self.difficulty;
 
-        let mut spawn_enemy = |config: &EnemyConfig, difficulty: &mut R32, rng: &mut ThreadRng| {
+        let find_position = |rng: &mut ThreadRng| -> Option<Position> {
             for _ in 0..50 {
                 let position = vec2(
                     rng.gen_range(room.area.min.x..=room.area.max.x),
                     rng.gen_range(room.area.min.y..=room.area.max.y),
                 );
-                if (self.player.body.collider.position - position).len() < r32(5.0) {
-                    continue;
+                if (self.player.body.collider.position - position).len() > r32(5.0) {
+                    return Some(position);
                 }
-
-                *difficulty -= config.cost.unwrap_or(R32::ZERO);
-                self.enemies.insert(Enemy::new(
-                    self.id_gen.gen(),
-                    EnemyConfig {
-                        health: config.health
-                            + self.config.difficulty.enemy_health_scaling * self.difficulty,
-                        ..config.clone()
-                    },
-                    position,
-                ));
-                break;
             }
+            None
+        };
+        let mut spawn_enemy = |config: &EnemyConfig, position: Position| -> Enemy {
+            let id = self.id_gen.gen();
+            Enemy::new(
+                id,
+                EnemyConfig {
+                    health: config.health
+                        + self.config.difficulty.enemy_health_scaling * self.difficulty,
+                    ..config.clone()
+                },
+                position,
+            )
         };
 
         if let Some(boss) = self
@@ -1089,7 +1109,9 @@ impl Model {
                     log::error!("Enemy named {enemy:?} not found");
                     continue;
                 };
-                spawn_enemy(enemy, &mut difficulty, &mut rng);
+                if let Some(position) = find_position(&mut rng) {
+                    self.enemies.insert(spawn_enemy(enemy, position));
+                }
             }
             return;
         }
@@ -1101,7 +1123,45 @@ impl Model {
             .filter(|config| config.cost.map_or(false, |cost| cost <= difficulty))
             .choose(&mut rng)
         {
-            spawn_enemy(config, &mut difficulty, &mut rng);
+            if let Some(grouping) = &config.grouping {
+                if grouping.cost <= difficulty
+                    && rng.gen_bool(grouping.chance.as_f32().clamp(0.0, 1.0).into())
+                {
+                    // Spawn group
+                    difficulty -= grouping.cost;
+                    if let Some(position) = find_position(&mut rng) {
+                        match &config.shape {
+                            Shape::Circle { radius } => {
+                                // Hexagon
+                                let mut prev = None;
+                                for i in 0..6 {
+                                    let angle = Angle::from_degrees(r32(360.0 * i as f32 / 6.0));
+                                    let position = position + angle.unit_vec() * *radius * r32(2.0);
+                                    let mut enemy = spawn_enemy(config, position);
+                                    if let Some((prev, prev_pos)) = prev {
+                                        enemy.attached_to =
+                                            Some((prev, enemy.body.collider.position - prev_pos));
+                                    }
+                                    prev = Some((enemy.id, enemy.body.collider.position));
+                                    self.enemies.insert(enemy);
+                                }
+                            }
+                            Shape::Rectangle { .. } => {
+                                // TODO
+                            }
+                            Shape::Triangle { .. } => {
+                                // TODO
+                            }
+                        }
+                    }
+                    continue;
+                }
+            }
+
+            difficulty -= config.cost.unwrap_or(R32::ZERO);
+            if let Some(position) = find_position(&mut rng) {
+                self.enemies.insert(spawn_enemy(config, position));
+            }
         }
     }
 

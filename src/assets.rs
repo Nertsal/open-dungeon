@@ -125,6 +125,7 @@ pub struct PlayerConfig {
 pub struct EnemyConfig {
     pub cost: Option<R32>,
     pub score: Option<Score>,
+    pub grouping: Option<EnemyGrouping>,
     pub mass: Option<R32>,
     pub health: Hp,
     pub damage: Hp,
@@ -132,6 +133,12 @@ pub struct EnemyConfig {
     pub acceleration: Coord,
     pub shape: Shape,
     pub ai: EnemyAI,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct EnemyGrouping {
+    pub cost: R32,
+    pub chance: R32,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
