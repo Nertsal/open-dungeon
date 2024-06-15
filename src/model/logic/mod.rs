@@ -300,7 +300,7 @@ impl Model {
             alive
         });
 
-        let in_battle = !self.enemies.is_empty();
+        let in_battle = !self.enemies.is_empty() || !self.spawn_queue.is_empty();
         self.enemies.retain(|enemy| {
             let alive = enemy.health.is_above_min();
             if !alive {
