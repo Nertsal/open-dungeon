@@ -112,9 +112,8 @@ impl Model {
 
                 let bounciness = r32(2.0);
                 let rel_vel = player.body.velocity - enemy.body.velocity;
-                let bounce = collision.normal
-                    * vec2::dot(rel_vel, collision.normal)
-                    * (R32::ONE + bounciness);
+                let projection = vec2::dot(rel_vel, collision.normal).max(R32::ZERO);
+                let bounce = collision.normal * projection * (R32::ONE + bounciness);
 
                 player.body.collider.position -= correction * player_t;
                 player.body.velocity -= bounce * player_t;
