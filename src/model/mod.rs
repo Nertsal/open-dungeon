@@ -284,4 +284,8 @@ impl Model {
         model.update_room_colliders();
         model
     }
+
+    pub fn reset(&mut self) {
+        *self = Self::new(self.config.clone());
+    }
 }

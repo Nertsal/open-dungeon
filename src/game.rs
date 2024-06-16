@@ -143,8 +143,16 @@ impl geng::State for GameState {
     }
 
     fn handle_event(&mut self, event: geng::Event) {
-        if let geng::Event::CursorMove { position } = event {
-            self.cursor.screen_pos = position;
+        match event {
+            geng::Event::KeyPress { key: geng::Key::R }
+                if self.geng.window().is_key_pressed(geng::Key::ControlLeft) =>
+            {
+                self.model.reset();
+            }
+            geng::Event::CursorMove { position } => {
+                self.cursor.screen_pos = position;
+            }
+            _ => (),
         }
     }
 
