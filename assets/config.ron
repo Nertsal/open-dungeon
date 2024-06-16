@@ -168,7 +168,7 @@ Config(
         "pacman": EnemyConfig(
             score: 4000,
             mass: 100.0,
-            health: 500.0,
+            health: 300.0,
             damage: 20.0,
             speed: 6.0,
             acceleration: 100.0,
@@ -178,7 +178,7 @@ Config(
         "helicopter": EnemyConfig(
             score: 9000,
             mass: 100.0,
-            health: 800.0,
+            health: 500.0,
             damage: 50.0,
             speed: 20.0,
             acceleration: 8.0,
