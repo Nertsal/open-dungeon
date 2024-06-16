@@ -1,4 +1,7 @@
-use crate::{prelude::*, render::GameRender};
+use crate::{
+    prelude::*,
+    render::{GameRender, SwapBuffer},
+};
 
 pub struct GameState {
     geng: Geng,
@@ -6,7 +9,9 @@ pub struct GameState {
 
     framebuffer_size: vec2<usize>,
     cursor: CursorState,
-    game_texture: ugli::Texture,
+    pixel_buffer: ugli::Texture,
+    post_buffer: SwapBuffer,
+    unit_quad: ugli::VertexBuffer<draw2d::TexturedVertex>,
 
     render: GameRender,
     model: Model,
@@ -33,12 +38,14 @@ impl GameState {
                 screen_pos: vec2::ZERO,
                 world_pos: vec2::ZERO,
             },
-            game_texture: {
+            pixel_buffer: {
                 let mut texture =
                     geng_utils::texture::new_texture(geng.ugli(), crate::GAME_RESOLUTION);
                 texture.set_filter(ugli::Filter::Nearest);
                 texture
             },
+            post_buffer: SwapBuffer::new(geng.ugli(), vec2(1, 1)),
+            unit_quad: geng_utils::geometry::unit_quad_geometry(geng.ugli()),
 
             render: GameRender::new(geng, assets),
             model: Model::new(assets.config.clone()),
@@ -94,7 +101,7 @@ impl geng::State for GameState {
         let _delta_time = Time::new(delta_time as f32);
 
         let game_pos = geng_utils::layout::fit_aabb(
-            self.game_texture.size().as_f32(),
+            self.pixel_buffer.size().as_f32(),
             Aabb2::ZERO.extend_positive(self.framebuffer_size.as_f32()),
             vec2(0.5, 0.5),
         );
@@ -157,6 +164,7 @@ impl geng::State for GameState {
     }
 
     fn draw(&mut self, framebuffer: &mut geng::prelude::ugli::Framebuffer) {
+        self.post_buffer.update_size(framebuffer.size());
         self.framebuffer_size = framebuffer.size();
         ugli::clear(
             framebuffer,
@@ -165,20 +173,51 @@ impl geng::State for GameState {
             None,
         );
 
-        let mut game_buffer =
-            geng_utils::texture::attach_texture(&mut self.game_texture, self.geng.ugli());
+        // Pixelated gameplay
+        let pixel_buffer =
+            &mut geng_utils::texture::attach_texture(&mut self.pixel_buffer, self.geng.ugli());
         ugli::clear(
-            &mut game_buffer,
+            pixel_buffer,
             Some(self.assets.palette.background),
             None,
             None,
         );
-        self.render.draw_game(&self.model, &mut game_buffer);
-        let aabb = Aabb2::ZERO.extend_positive(framebuffer.size().as_f32());
-        geng_utils::texture::DrawTexture::new(&self.game_texture)
-            .fit(aabb, vec2(0.5, 0.5))
-            .draw(&geng::PixelPerfectCamera, &self.geng, framebuffer);
+        self.render.draw_game(&self.model, pixel_buffer);
 
-        self.render.draw_ui(&self.model, framebuffer);
+        // Upscale
+        let post_buffer = &mut self.post_buffer.active_draw();
+        geng_utils::texture::DrawTexture::new(&self.pixel_buffer)
+            .fit_screen(vec2(0.5, 0.5), post_buffer)
+            .draw(&geng::PixelPerfectCamera, &self.geng, post_buffer);
+
+        // UI
+        self.render.draw_ui(&self.model, post_buffer);
+
+        // Postprocessing - Hurt
+        self.post_buffer.swap();
+        let post_buffer = &mut geng_utils::texture::attach_texture(
+            &mut self.post_buffer.active,
+            self.geng.ugli(),
+        );
+        let intensity = 1.0
+            - (self.model.game_time - self.model.player.last_hit)
+                .as_f32()
+                .min(1.0);
+        ugli::draw(
+            post_buffer,
+            &self.assets.shaders.vhs,
+            ugli::DrawMode::TriangleFan,
+            &self.unit_quad,
+            ugli::uniforms! {
+                u_texture: &self.post_buffer.second,
+                u_time: self.model.real_time.as_f32(),
+                u_intensity: intensity,
+            },
+            ugli::DrawParameters { ..default() },
+        );
+
+        geng_utils::texture::DrawTexture::new(&self.post_buffer.active)
+            .fit_screen(vec2(0.5, 0.5), framebuffer)
+            .draw(&geng::PixelPerfectCamera, &self.geng, framebuffer);
     }
 }

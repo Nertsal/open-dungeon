@@ -7,8 +7,14 @@ pub struct Assets {
     pub palette: Palette,
     pub sounds: Sounds,
     pub sprites: Sprites,
+    pub shaders: Shaders,
     #[load(path = "font/font.ttf")]
     pub font: Rc<geng::Font>,
+}
+
+#[derive(geng::asset::Load)]
+pub struct Shaders {
+    pub vhs: ugli::Program,
 }
 
 #[derive(geng::asset::Load)]

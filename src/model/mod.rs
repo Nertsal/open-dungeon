@@ -184,6 +184,7 @@ pub enum MinionAI {
 #[derive(Debug, Clone)]
 pub struct Player {
     pub health: Health,
+    pub last_hit: Time,
     pub body: PhysicsBody,
     pub active_weapon: Weapon,
     pub stats: PlayerConfig,
@@ -255,6 +256,7 @@ impl Model {
 
             player: Player {
                 health: Health::new_max(config.player.health),
+                last_hit: r32(-999.0),
                 body: PhysicsBody::new(vec2::ZERO, config.player.shape),
                 active_weapon: Weapon::Whip,
                 stats: config.player.clone(),

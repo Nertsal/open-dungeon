@@ -120,6 +120,7 @@ impl Model {
                 player.body.velocity -= bounce * player_t;
                 let damage = enemy.stats.damage * damage_mult;
                 player.health.change(-damage);
+                player.last_hit = self.game_time;
                 if damage > Hp::ZERO {
                     player
                         .invincibility
