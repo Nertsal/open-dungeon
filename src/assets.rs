@@ -60,6 +60,8 @@ pub struct Sprites {
     pub medium: ugli::Texture,
     #[load(options(filter = "ugli::Filter::Nearest"))]
     pub hard: ugli::Texture,
+    #[load(options(filter = "ugli::Filter::Nearest"))]
+    pub hint: ugli::Texture,
 }
 
 #[derive(geng::asset::Load, Debug, Clone, Serialize, Deserialize)]

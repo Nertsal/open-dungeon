@@ -69,6 +69,22 @@ impl GameRender {
             );
         }
 
+        if model.rooms.contains(Index::from_raw_parts(0, 0)) && model.rooms.len() == 1 {
+            // Hint
+            let pos = vec2(2.5, 3.7);
+            if let Some(pos) = model
+                .camera
+                .world_to_screen(framebuffer.size().as_f32(), pos)
+            {
+                self.draw_texture(
+                    Aabb2::point(pos),
+                    &self.assets.sprites.hint,
+                    self.assets.palette.text,
+                    framebuffer,
+                );
+            }
+        }
+
         // Objects
         for object in &model.objects {
             self.draw_collider(
