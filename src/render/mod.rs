@@ -87,12 +87,28 @@ impl GameRender {
 
         // Objects
         for object in &model.objects {
-            self.draw_collider(
-                &object.collider,
-                self.assets.palette.object,
-                &model.camera,
-                framebuffer,
-            );
+            let Some(pos) = model.camera.world_to_screen(
+                framebuffer.size().as_f32(),
+                object.collider.position.as_f32(),
+            ) else {
+                continue;
+            };
+            match &object.kind {
+                ObjectKind::ExplosiveBarrel { .. } => {
+                    self.draw_texture(
+                        Aabb2::point(pos),
+                        &self.assets.sprites.barrel,
+                        self.assets.palette.object,
+                        framebuffer,
+                    );
+                }
+            }
+            // self.draw_collider(
+            //     &object.collider,
+            //     self.assets.palette.object,
+            //     &model.camera,
+            //     framebuffer,
+            // );
         }
 
         if let Some(drawing) = &model.player.draw_action {

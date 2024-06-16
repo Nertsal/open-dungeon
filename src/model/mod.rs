@@ -121,7 +121,14 @@ impl Direction {
 
 #[derive(Debug, Clone)]
 pub struct Object {
+    pub dead: bool,
     pub collider: Collider,
+    pub kind: ObjectKind,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum ObjectKind {
+    ExplosiveBarrel { range: Coord, damage: Hp },
 }
 
 #[derive(Debug, Clone)]

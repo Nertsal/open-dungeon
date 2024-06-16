@@ -78,15 +78,40 @@ impl Model {
     }
 
     pub fn collisions(&mut self, _delta_time: Time) {
-        // Player - Object collisions
-        let player = &mut self.player;
-        for object in &self.objects {
+        // Object collisions
+        for object in &mut self.objects {
+            let player = &mut self.player;
             if let Some(collision) = player.body.collider.collide(&object.collider) {
                 player.body.collider.position -= collision.normal * collision.penetration;
                 let projection = vec2::dot(player.body.velocity, collision.normal);
                 player.body.velocity -= collision.normal * projection;
                 if projection > r32(1.0) {
                     self.events.push(Event::Sound(SoundEvent::Bounce));
+                }
+            }
+
+            for minion in &mut self.minions {
+                if minion.body.collider.check(&object.collider) {
+                    match (&minion.ai, &object.kind) {
+                        (MinionAI::Bullet { .. }, ObjectKind::ExplosiveBarrel { .. }) => {
+                            // NOTE: explosion managed on death
+                            minion.health.set_ratio(Hp::ZERO);
+                            object.dead = true;
+                            self.events.push(Event::Sound(SoundEvent::Hit));
+                        }
+                    }
+                }
+            }
+
+            for enemy in &mut self.enemies {
+                if enemy.body.collider.check(&object.collider) {
+                    match &object.kind {
+                        ObjectKind::ExplosiveBarrel { .. } => {
+                            // NOTE: explosion managed on death
+                            object.dead = true;
+                            self.events.push(Event::Sound(SoundEvent::Hit));
+                        }
+                    }
                 }
             }
         }
@@ -269,6 +294,38 @@ impl Model {
     }
 
     pub fn check_deaths(&mut self, delta_time: Time) {
+        self.objects.retain(|object| {
+            let alive = !object.dead
+                && self
+                    .rooms
+                    .iter()
+                    .any(|(_, room)| room.area.contains(object.collider.position));
+            if !alive {
+                match &object.kind {
+                    &ObjectKind::ExplosiveBarrel { range, damage } => {
+                        let explosion =
+                            Collider::new(object.collider.position, Shape::circle(range));
+                        for enemy in &mut self.enemies {
+                            if enemy.invincibility.is_min() && explosion.check(&enemy.body.collider)
+                            {
+                                enemy.health.change(-damage);
+                            }
+                        }
+
+                        self.particles_queue.push(SpawnParticles {
+                            kind: ParticleKind::Damage,
+                            distribution: ParticleDistribution::Circle {
+                                center: object.collider.position,
+                                radius: range,
+                            },
+                            ..default()
+                        });
+                    }
+                }
+            }
+            alive
+        });
+
         self.minions.retain(|minion| {
             let alive = minion.health.is_above_min();
             if !alive {
@@ -411,13 +468,19 @@ impl Model {
             let repel_force = self
                 .enemies
                 .iter()
-                .map(|other| {
-                    let delta = enemy.body.collider.position - other.body.collider.position;
+                .map(|other| (other.body.collider.position, 3.0, 1.0))
+                .chain(
+                    self.objects
+                        .iter()
+                        .map(|object| (object.collider.position, 1.5, 5.0)),
+                )
+                .map(|(other, pow, weight)| {
+                    let delta = enemy.body.collider.position - other;
                     let len = delta.len();
                     if len.approx_eq(&Coord::ZERO) {
                         vec2::ZERO
                     } else {
-                        delta / len.powi(3)
+                        delta / len.powf(r32(pow)) * r32(weight)
                     }
                 })
                 .fold(vec2::ZERO, vec2::add);
@@ -468,7 +531,7 @@ impl Model {
                         + (enemy.body.collider.position - self.player.body.collider.position)
                             .normalize_or_zero()
                             * *preferred_distance;
-                    let target_velocity = (target - enemy.body.collider.position)
+                    let target_velocity = (target - enemy.body.collider.position + repel_force)
                         .normalize_or_zero()
                         * enemy.stats.speed;
                     enemy.body.velocity += (target_velocity - enemy.body.velocity)
@@ -537,7 +600,7 @@ impl Model {
                                     / r32(2.0)
                         },
                     );
-                    let target_velocity = (target - enemy.body.collider.position)
+                    let target_velocity = (target - enemy.body.collider.position + repel_force)
                         .normalize_or_zero()
                         * enemy.stats.speed;
                     enemy.body.velocity += (target_velocity - enemy.body.velocity)
@@ -597,7 +660,7 @@ impl Model {
                                     * *preferred_distance
                         },
                     );
-                    let target_velocity = (target - enemy.body.collider.position)
+                    let target_velocity = (target - enemy.body.collider.position + repel_force)
                         .normalize_or_zero()
                         * enemy.stats.speed;
                     enemy.body.velocity += (target_velocity - enemy.body.velocity)
@@ -896,7 +959,6 @@ impl Model {
                 continue;
             };
 
-            // TODO: maybe account for collider shape or size
             let enemy_radius = enemy.body.collider.compute_aabb().size().len()
                 / r32(std::f32::consts::SQRT_2 * 2.0);
             if delta.len() < width + enemy_radius {
@@ -923,6 +985,18 @@ impl Model {
                     ..default()
                 });
                 self.events.push(Event::Sound(SoundEvent::Hit));
+            }
+        }
+        for object in &mut self.objects {
+            let Some(delta) = delta_to_chain(object.collider.position, &drawing.points_smoothed)
+            else {
+                continue;
+            };
+
+            let object_radius =
+                object.collider.compute_aabb().size().len() / r32(std::f32::consts::SQRT_2 * 2.0);
+            if delta.len() < width + object_radius {
+                object.dead = true;
             }
         }
 
@@ -1256,6 +1330,40 @@ impl Model {
             difficulty -= config.cost.unwrap_or(R32::ZERO);
             if let Some(position) = find_position(&mut rng) {
                 self.enemies.insert(spawn_enemy(config, position));
+            }
+        }
+
+        // Objects
+        let objects = [(
+            ObjectKind::ExplosiveBarrel {
+                range: self.player.stats.whip.width + r32(2.0),
+                damage: self.player.stats.whip.damage * r32(1.7),
+            },
+            1.0,
+        )];
+        for (kind, chance) in objects {
+            if !rng.gen_bool(chance) {
+                continue;
+            }
+
+            let area = room.area.extend_uniform(-r32(3.0));
+            for _ in 0..10 {
+                let position = vec2(
+                    rng.gen_range(area.min.x..=area.max.x),
+                    rng.gen_range(area.min.y..=area.max.y),
+                );
+                if self
+                    .enemies
+                    .iter()
+                    .all(|enemy| (enemy.body.collider.position - position).len() > r32(5.0))
+                {
+                    self.objects.push(Object {
+                        dead: false,
+                        collider: Collider::new(position, Shape::square(r32(1.33))),
+                        kind,
+                    });
+                    break;
+                }
             }
         }
     }
