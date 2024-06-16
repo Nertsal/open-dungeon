@@ -742,14 +742,25 @@ impl Model {
                                         let tank = &self.config.enemies["tank"];
                                         let circle = &self.config.enemies["circle"];
                                         let shielder = &self.config.enemies["shielder"];
+                                        let shooter = &self.config.enemies["shooter"];
+                                        let minions = [
+                                            tank.clone(),
+                                            shooter.clone(),
+                                            circle.clone(),
+                                            shielder.clone(),
+                                            circle.clone(),
+                                            circle.clone(),
+                                            shooter.clone(),
+                                        ]
+                                        .into_iter()
+                                        .map(|mut enemy| {
+                                            enemy.health *= r32(1.5);
+                                            enemy
+                                        })
+                                        .collect();
                                         helicopter.state = HelicopterState::Minions {
-                                            minions: vec![
-                                                tank.clone(),
-                                                shielder.clone(),
-                                                circle.clone(),
-                                                circle.clone(),
-                                            ],
-                                            delay: Bounded::new_max(r32(0.5)),
+                                            minions,
+                                            delay: Bounded::new_max(r32(0.15)),
                                         };
                                     } else {
                                         helicopter.state = HelicopterState::Minigun {

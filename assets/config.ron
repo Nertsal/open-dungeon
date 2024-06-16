@@ -177,7 +177,7 @@ Config(
         "helicopter": EnemyConfig(
             score: 9000,
             mass: 100.0,
-            health: 600.0,
+            health: 800.0,
             damage: 50.0,
             speed: 20.0,
             acceleration: 8.0,
