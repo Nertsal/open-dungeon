@@ -442,7 +442,7 @@ impl Model {
                     charge.change(delta_time);
                     if charge.is_max() {
                         charge.set_ratio(Time::ZERO);
-                        self.spawn_queue.push(Enemy::new(
+                        let mut bullet = Enemy::new(
                             self.id_gen.gen(),
                             EnemyConfig {
                                 health: bullet.health
@@ -450,7 +450,12 @@ impl Model {
                                 ..(**bullet).clone()
                             },
                             enemy.body.collider.position,
-                        ));
+                        );
+                        let dir = (self.player.body.collider.position
+                            - bullet.body.collider.position)
+                            .normalize_or_zero();
+                        bullet.body.velocity = dir * bullet.stats.speed;
+                        self.spawn_queue.push(bullet);
                     }
 
                     let target = self.player.body.collider.position
