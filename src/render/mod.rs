@@ -221,6 +221,7 @@ impl GameRender {
                     Weapon::Whip => &self.assets.sprites.whip,
                     Weapon::Dash => &self.assets.sprites.dash,
                     Weapon::Bow => &self.assets.sprites.bow,
+                    Weapon::FishingRod => &self.assets.sprites.fishing_rod,
                 },
             };
 

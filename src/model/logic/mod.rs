@@ -361,7 +361,7 @@ impl Model {
             UpgradeEffect::Difficulty,
         ];
         options.extend(
-            [Weapon::Whip, Weapon::Dash, Weapon::Bow]
+            [Weapon::Whip, Weapon::Dash, Weapon::Bow, Weapon::FishingRod]
                 .into_iter()
                 .filter(|weapon| *weapon != self.player.active_weapon)
                 .map(UpgradeEffect::Weapon),
@@ -880,6 +880,16 @@ impl Model {
             if delta.len() < width + enemy_radius {
                 enemy.health.change(-base_damage); // TODO: combo scaling
                 enemy.last_hit = self.game_time;
+
+                if let Weapon::FishingRod = &self.player.active_weapon {
+                    if drawing.points_smoothed.len() >= 2 {
+                        let speed = self.player.stats.fishing.speed;
+                        let dir = (*drawing.points_smoothed.last().unwrap()
+                            - drawing.points_smoothed[drawing.points_smoothed.len() - 2])
+                            .normalize_or_zero();
+                        enemy.body.velocity += dir * speed;
+                    }
+                }
 
                 let size = enemy.body.collider.compute_aabb().size();
                 self.particles_queue.push(SpawnParticles {

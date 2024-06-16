@@ -37,6 +37,7 @@ impl Model {
             Weapon::Whip => &mut player.stats.whip,
             Weapon::Dash => &mut player.stats.dash,
             Weapon::Bow => &mut player.stats.bow,
+            Weapon::FishingRod => &mut player.stats.fishing,
         };
         let ready = stats.cooldown.is_min();
         stats.cooldown.change(-delta_time);
@@ -154,6 +155,7 @@ impl Model {
             Weapon::Whip => &mut player.stats.whip,
             Weapon::Dash => &mut player.stats.dash,
             Weapon::Bow => &mut player.stats.bow,
+            Weapon::FishingRod => &mut player.stats.fishing,
         };
 
         let expand_room = can_expand
@@ -193,6 +195,7 @@ impl Model {
                 bullet.body.velocity = (last - prelast).normalize_or_zero() * stats.speed;
                 self.minions.push(bullet);
             }
+            Weapon::FishingRod => {}
         }
 
         let width = stats.width;

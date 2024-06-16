@@ -195,6 +195,7 @@ pub enum Weapon {
     Whip,
     Dash,
     Bow,
+    FishingRod,
 }
 
 #[derive(Debug, Clone)]

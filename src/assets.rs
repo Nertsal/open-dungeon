@@ -44,6 +44,8 @@ pub struct Sprites {
     #[load(options(filter = "ugli::Filter::Nearest"))]
     pub bow: ugli::Texture,
     #[load(options(filter = "ugli::Filter::Nearest"))]
+    pub fishing_rod: ugli::Texture,
+    #[load(options(filter = "ugli::Filter::Nearest"))]
     pub easy: ugli::Texture,
     #[load(options(filter = "ugli::Filter::Nearest"))]
     pub medium: ugli::Texture,
@@ -123,6 +125,7 @@ pub struct PlayerConfig {
     pub whip: DrawConfig,
     pub dash: DrawConfig,
     pub bow: DrawConfig,
+    pub fishing: DrawConfig,
     pub shape: Shape,
     pub shield: Shape,
 }
