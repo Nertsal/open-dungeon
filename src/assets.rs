@@ -7,6 +7,8 @@ pub struct Assets {
     pub palette: Palette,
     pub sounds: Sounds,
     pub sprites: Sprites,
+    #[load(path = "font/font.ttf")]
+    pub font: Rc<geng::Font>,
 }
 
 #[derive(geng::asset::Load)]

@@ -340,7 +340,7 @@ impl GameRender {
                 model.rooms_cleared,
                 model.bosses_killed
             );
-            self.geng.default_font().draw(
+            self.assets.font.draw(
                 framebuffer,
                 &model.camera,
                 &text,
@@ -354,7 +354,7 @@ impl GameRender {
 
         // Score
         let pos = game_view.center() + vec2(0.0, 0.9) * game_view.size() / 2.0;
-        self.geng.default_font().draw(
+        self.assets.font.draw(
             framebuffer,
             &model.camera,
             &format!("SCORE: {}", model.score),
@@ -363,7 +363,7 @@ impl GameRender {
             self.assets.palette.text,
         );
         if model.score_multiplier != R32::ONE {
-            self.geng.default_font().draw(
+            self.assets.font.draw(
                 framebuffer,
                 &model.camera,
                 &format!("x{:.1}", model.score_multiplier),
