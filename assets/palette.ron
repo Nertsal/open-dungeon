@@ -7,7 +7,7 @@ Palette(
     wall_block: "#e8985f",
     player: "#fdffcf",
     minion: "#e6c081",
-    object: "#234a57",
+    object: "#b52d6d",
     enemy: "#eaf257",
     health: "#b52d6d",
     drawing: "#e6c081",
