@@ -1178,6 +1178,9 @@ impl Model {
                 if let Some(position) = find_position(&mut rng) {
                     let mut boss = spawn_enemy(enemy, position);
                     boss.is_boss = true;
+                    // Boost boss max hp with player damage
+                    let hp_boost = self.player.stats.whip.damage / r32(7.0) * r32(0.9);
+                    boss.health = Bounded::new_max(boss.health.max() * hp_boost);
                     self.enemies.insert(boss);
                 }
             }
