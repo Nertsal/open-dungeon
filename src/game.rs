@@ -9,7 +9,7 @@ pub struct GameState {
 
     framebuffer_size: vec2<usize>,
     cursor: CursorState,
-    pixel_buffer: ugli::Texture,
+    pixel_buffer: SwapBuffer,
     post_buffer: SwapBuffer,
     unit_quad: ugli::VertexBuffer<draw2d::TexturedVertex>,
 
@@ -38,12 +38,7 @@ impl GameState {
                 screen_pos: vec2::ZERO,
                 world_pos: vec2::ZERO,
             },
-            pixel_buffer: {
-                let mut texture =
-                    geng_utils::texture::new_texture(geng.ugli(), crate::GAME_RESOLUTION);
-                texture.set_filter(ugli::Filter::Nearest);
-                texture
-            },
+            pixel_buffer: SwapBuffer::new(geng.ugli(), crate::GAME_RESOLUTION),
             post_buffer: SwapBuffer::new(geng.ugli(), vec2(1, 1)),
             unit_quad: geng_utils::geometry::unit_quad_geometry(geng.ugli()),
 
@@ -173,20 +168,50 @@ impl geng::State for GameState {
             None,
         );
 
-        // Pixelated gameplay
-        let pixel_buffer =
-            &mut geng_utils::texture::attach_texture(&mut self.pixel_buffer, self.geng.ugli());
+        // Pixelated
+        let pixel_buffer = &mut self.pixel_buffer.active_draw();
         ugli::clear(
             pixel_buffer,
             Some(self.assets.palette.background),
             None,
             None,
         );
+
+        // Game
         self.render.draw_game(&self.model, pixel_buffer);
+
+        // Background
+        self.pixel_buffer.swap();
+        let pixel_buffer = &mut geng_utils::texture::attach_texture(
+            &mut self.pixel_buffer.active,
+            self.geng.ugli(),
+        );
+        let world_matrix = (self
+            .model
+            .camera
+            .projection_matrix(pixel_buffer.size().as_f32())
+            * self.model.camera.view_matrix())
+        .inverse();
+        ugli::draw(
+            pixel_buffer,
+            &self.assets.shaders.background,
+            ugli::DrawMode::TriangleFan,
+            &self.unit_quad,
+            ugli::uniforms! {
+                u_texture: &self.pixel_buffer.second,
+                u_time: self.model.real_time.as_f32(),
+                u_mask_color: self.assets.palette.room,
+                u_world_matrix: world_matrix,
+            },
+            ugli::DrawParameters {
+                blend_mode: Some(ugli::BlendMode::straight_alpha()),
+                ..default()
+            },
+        );
 
         // Upscale
         let post_buffer = &mut self.post_buffer.active_draw();
-        geng_utils::texture::DrawTexture::new(&self.pixel_buffer)
+        geng_utils::texture::DrawTexture::new(&self.pixel_buffer.active)
             .fit_screen(vec2(0.5, 0.5), post_buffer)
             .draw(&geng::PixelPerfectCamera, &self.geng, post_buffer);
 

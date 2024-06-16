@@ -15,6 +15,7 @@ pub struct Assets {
 #[derive(geng::asset::Load)]
 pub struct Shaders {
     pub vhs: ugli::Program,
+    pub background: ugli::Program,
 }
 
 #[derive(geng::asset::Load)]

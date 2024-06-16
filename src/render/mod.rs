@@ -20,9 +20,9 @@ impl SwapBuffer {
         }
     }
 
-    // pub fn size(&self) -> vec2<usize> {
-    //     self.active.size()
-    // }
+    pub fn size(&self) -> vec2<usize> {
+        self.active.size()
+    }
 
     pub fn update_size(&mut self, size: vec2<usize>) {
         if self.active.size() != size {
