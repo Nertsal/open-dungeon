@@ -19,6 +19,13 @@ impl Model {
             });
         }
 
+        if player.health.is_min() {
+            player.body.collider.position += player.body.velocity * delta_time;
+            player.body.move_rotation();
+            player.body.collider.rotation += player.body.angular_velocity * delta_time;
+            return;
+        }
+
         // Movement
         if player.draw_action.is_some() {
             player.body.velocity = vec2::ZERO;
