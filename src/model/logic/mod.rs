@@ -310,8 +310,11 @@ impl Model {
                 if enemy.is_boss {
                     self.bosses_killed += 1;
                 }
-                self.score += (enemy.stats.score.unwrap_or(0) as f32
-                    * self.score_multiplier.as_f32()) as Score;
+                if self.player.health.is_above_min() {
+                    self.score += (enemy.stats.score.unwrap_or(0) as f32
+                        * self.score_multiplier.as_f32())
+                        as Score;
+                }
                 if let EnemyAI::Bullet = enemy.ai {
                     self.particles_queue.push(SpawnParticles {
                         kind: ParticleKind::Bounce,
@@ -1296,7 +1299,7 @@ impl Model {
             }
         }
 
-        let min = r32(0.01);
+        let min = r32(1.0);
         let squashed: Vec<_> = self
             .rooms
             .iter()
