@@ -25,6 +25,7 @@ pub struct Model {
     pub id_gen: IdGenerator,
 
     pub rooms_cleared: usize,
+    pub bosses_killed: usize,
     pub difficulty_raw: R32,
     pub difficulty: R32,
     pub score: Score,
@@ -246,6 +247,7 @@ impl Model {
             id_gen: IdGenerator::new(),
 
             rooms_cleared: 0,
+            bosses_killed: 0,
             difficulty_raw: config.difficulty.initial,
             difficulty: config.difficulty.initial,
             score: 0,

@@ -3,6 +3,7 @@ use super::*;
 #[derive(HasId, Debug, Clone)]
 pub struct Enemy {
     pub id: Id,
+    pub is_boss: bool,
     pub health: Health,
     pub last_hit: Time,
     pub invincibility: Bounded<Time>,
@@ -18,6 +19,7 @@ impl Enemy {
         body.mass = config.mass.unwrap_or(R32::ONE);
         Self {
             id,
+            is_boss: false,
             health: Bounded::new_max(config.health),
             last_hit: r32(-999.0),
             invincibility: Bounded::new_zero(r32(0.5)),

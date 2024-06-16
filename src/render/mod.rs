@@ -326,10 +326,34 @@ impl GameRender {
 
     pub fn draw_ui(&self, model: &Model, framebuffer: &mut ugli::Framebuffer) {
         let frame_view = framebuffer.size().as_f32();
-        let game_view = vec2(framebuffer.size().as_f32().aspect(), 1.0) * model.camera.fov / 2.0;
+        let game_view = Aabb2::point(model.camera.center).extend_symmetric(
+            vec2(framebuffer.size().as_f32().aspect(), 1.0) * model.camera.fov / 2.0,
+        );
+
+        if model.player.health.is_min() {
+            // Death screen
+
+            let pos = game_view.center() + vec2(0.0, 0.05) * game_view.size();
+            let text = format!(
+                "You Died\nScore: {}\nRooms cleared: {}\nBosses defeated: {}/2\n\nTry Again\nCtrl + R",
+                model.score,
+                model.rooms_cleared,
+                model.bosses_killed
+            );
+            self.geng.default_font().draw(
+                framebuffer,
+                &model.camera,
+                &text,
+                vec2::splat(geng::TextAlign::CENTER),
+                mat3::translate(pos) * mat3::scale_uniform(1.5),
+                self.assets.palette.text,
+            );
+
+            return;
+        }
 
         // Score
-        let pos = model.camera.center + vec2(0.0, game_view.y * 0.9);
+        let pos = game_view.center() + vec2(0.0, 0.9) * game_view.size() / 2.0;
         self.geng.default_font().draw(
             framebuffer,
             &model.camera,
@@ -469,7 +493,7 @@ impl GameRender {
         camera: &Camera,
         framebuffer: &mut ugli::Framebuffer,
     ) {
-        if health.is_max() {
+        if health.is_max() || health.is_min() {
             return;
         }
 

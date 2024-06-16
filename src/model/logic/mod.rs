@@ -307,6 +307,9 @@ impl Model {
         self.enemies.retain(|enemy| {
             let alive = enemy.health.is_above_min();
             if !alive {
+                if enemy.is_boss {
+                    self.bosses_killed += 1;
+                }
                 self.score += (enemy.stats.score.unwrap_or(0) as f32
                     * self.score_multiplier.as_f32()) as Score;
                 if let EnemyAI::Bullet = enemy.ai {
@@ -1173,7 +1176,9 @@ impl Model {
                     continue;
                 };
                 if let Some(position) = find_position(&mut rng) {
-                    self.enemies.insert(spawn_enemy(enemy, position));
+                    let mut boss = spawn_enemy(enemy, position);
+                    boss.is_boss = true;
+                    self.enemies.insert(boss);
                 }
             }
             return;
