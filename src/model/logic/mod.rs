@@ -320,6 +320,7 @@ impl Model {
                             },
                             ..default()
                         });
+                        self.events.push(Event::Sound(SoundEvent::Explosion));
                     }
                 }
             }
@@ -1339,7 +1340,7 @@ impl Model {
                 range: self.player.stats.whip.width + r32(2.0),
                 damage: self.player.stats.whip.damage * r32(1.7),
             },
-            1.0,
+            0.4,
         )];
         for (kind, chance) in objects {
             if !rng.gen_bool(chance) {

@@ -130,6 +130,7 @@ impl geng::State for GameState {
                     SoundEvent::Bounce => self.play_sfx(&self.assets.sounds.bounce),
                     SoundEvent::Expand => self.play_sfx(&self.assets.sounds.expand),
                     SoundEvent::Minigun => self.play_sfx(&self.assets.sounds.minigun),
+                    SoundEvent::Explosion => self.play_sfx(&self.assets.sounds.explosion),
                 },
             }
         }
