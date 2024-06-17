@@ -182,7 +182,15 @@ impl geng::State for GameState {
     }
 
     fn draw(&mut self, framebuffer: &mut geng::prelude::ugli::Framebuffer) {
-        self.post_buffer.update_size(framebuffer.size());
+        let mut size = framebuffer.size().as_f32();
+        let aspect = 16.0 / 9.0;
+        if size.aspect() > aspect {
+            size.x = size.y * aspect;
+        } else {
+            size.y = size.x / aspect;
+        }
+        self.post_buffer.update_size(size.map(|x| x as usize));
+
         self.framebuffer_size = framebuffer.size();
         ugli::clear(
             framebuffer,
