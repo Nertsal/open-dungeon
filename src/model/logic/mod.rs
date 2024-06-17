@@ -256,6 +256,23 @@ impl Model {
                 }
             }
         }
+
+        // Out of bounds
+        let player = &mut self.player;
+        if self
+            .rooms
+            .iter()
+            .all(|(_, room)| !room.area.contains(player.body.collider.position))
+        {
+            if let Some((distance, direction)) = self
+                .rooms
+                .iter()
+                .map(|(_, room)| room.closest_wall(player.body.collider.position))
+                .min_by_key(|(d, _)| *d)
+            {
+                player.body.collider.position -= direction.as_vec2() * (distance + r32(0.5));
+            }
+        }
     }
 
     pub fn collect_upgrade(&mut self, upgrade: Upgrade) {

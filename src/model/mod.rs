@@ -110,6 +110,15 @@ pub enum Direction {
 }
 
 impl Direction {
+    pub fn as_vec2(&self) -> vec2<Coord> {
+        match self {
+            Direction::Left => -vec2::UNIT_X,
+            Direction::Right => vec2::UNIT_X,
+            Direction::Down => -vec2::UNIT_Y,
+            Direction::Up => vec2::UNIT_Y,
+        }
+    }
+
     pub fn opposite(&self) -> Self {
         match self {
             Self::Left => Self::Right,
