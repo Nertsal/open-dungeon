@@ -83,6 +83,20 @@ impl GameRender {
                     framebuffer,
                 );
             }
+
+            // Producer
+            let pos = vec2(-10.0, -4.0);
+            if let Some(pos) = model
+                .camera
+                .world_to_screen(framebuffer.size().as_f32(), pos)
+            {
+                self.draw_texture(
+                    Aabb2::point(pos),
+                    &self.assets.sprites.producer,
+                    self.assets.palette.text,
+                    framebuffer,
+                );
+            }
         }
 
         // Objects

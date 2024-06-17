@@ -16,14 +16,15 @@ void main() {
 uniform sampler2D u_texture;
 uniform float u_time;
 uniform vec4 u_mask_color;
+uniform vec4 u_mask2_color;
 uniform mat3 u_world_matrix;
 
 void main() {
     vec4 tex_color = texture2D(u_texture, v_vt);
-    // if (tex_color != u_mask_color) {
-    //     gl_FragColor = tex_color;
-    //     return;
-    // }
+    if (tex_color != u_mask_color && tex_color != u_mask2_color) {
+        gl_FragColor = tex_color;
+        return;
+    }
     
     vec3 world_pos = u_world_matrix * vec3(v_pos, 1.0);
     vec2 pos = world_pos.xy / world_pos.z;

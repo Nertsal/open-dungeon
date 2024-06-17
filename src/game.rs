@@ -202,6 +202,7 @@ impl geng::State for GameState {
                 u_texture: &self.pixel_buffer.second,
                 u_time: self.model.real_time.as_f32(),
                 u_mask_color: self.assets.palette.room,
+                u_mask2_color: self.assets.palette.background,
                 u_world_matrix: world_matrix,
             },
             ugli::DrawParameters {
