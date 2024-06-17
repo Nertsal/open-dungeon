@@ -16,6 +16,8 @@ pub struct GameState {
     render: GameRender,
     model: Model,
 
+    playing_intro: bool,
+    music: geng::SoundEffect,
     drawing_sfx: geng::SoundEffect,
     helicopter_sfx: geng::SoundEffect,
     volume: f32,
@@ -45,6 +47,12 @@ impl GameState {
             render: GameRender::new(geng, assets),
             model: Model::new(assets.config.clone()),
 
+            playing_intro: true,
+            music: {
+                let mut sfx = assets.music_intro.play();
+                sfx.set_volume(0.5);
+                sfx
+            },
             drawing_sfx: {
                 let mut sfx = assets.sounds.drawing.play();
                 sfx.set_volume(0.0);
@@ -107,6 +115,20 @@ impl geng::State for GameState {
             .screen_to_world(game_pos.size(), pos)
             .as_r32();
         self.model.cursor_pos = self.cursor.world_pos;
+
+        let intro =
+            self.model.rooms.contains(Index::from_raw_parts(0, 0)) && self.model.rooms.len() == 1;
+        if intro && !self.playing_intro {
+            self.music.stop();
+            self.music = self.assets.music_intro.play();
+            self.music.set_volume(0.5);
+            self.playing_intro = true;
+        } else if !intro && self.playing_intro {
+            self.music.stop();
+            self.music = self.assets.music_background.play();
+            self.music.set_volume(0.5);
+            self.playing_intro = false;
+        }
     }
 
     fn fixed_update(&mut self, delta_time: f64) {

@@ -10,6 +10,10 @@ pub struct Assets {
     pub shaders: Shaders,
     #[load(path = "font/font.ttf")]
     pub font: Rc<geng::Font>,
+    #[load(options(looped = "true"))]
+    pub music_intro: Rc<geng::Sound>,
+    #[load(options(looped = "true"))]
+    pub music_background: Rc<geng::Sound>,
 }
 
 #[derive(geng::asset::Load)]
