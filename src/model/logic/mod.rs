@@ -16,6 +16,10 @@ impl Model {
             self.difficulty = (self.difficulty_raw / difficulty_step).floor() * difficulty_step;
         }
 
+        if self.player.health.is_min() {
+            self.player.draw_action = None;
+        }
+
         if self.player.draw_action.is_some() {
             self.events.push(Event::Sound(SoundEvent::Drawing));
         }
@@ -143,9 +147,9 @@ impl Model {
                 player.body.collider.position -= correction * player_t;
                 player.body.velocity -= bounce * player_t;
                 let damage = enemy.stats.damage * damage_mult;
-                player.health.change(-damage);
-                player.last_hit = self.game_time;
                 if damage > Hp::ZERO {
+                    player.health.change(-damage);
+                    player.last_hit = self.game_time;
                     player
                         .invincibility
                         .set(player.stats.hurt_invincibility_time);
