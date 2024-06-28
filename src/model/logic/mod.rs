@@ -595,14 +595,28 @@ impl Model {
                         if cooldown.is_min() && distance < *range {
                             cooldown.set_ratio(Time::ONE);
                             target.health.change(target.health.max() * *heal_ratio);
-                            self.particles_queue.push(SpawnParticles {
-                                kind: ParticleKind::Heal,
-                                distribution: ParticleDistribution::Circle {
-                                    center: target.body.collider.position,
-                                    radius: r32(1.2),
+                            self.particles_queue.extend([
+                                SpawnParticles {
+                                    kind: ParticleKind::Heal,
+                                    distribution: ParticleDistribution::Circle {
+                                        center: target.body.collider.position,
+                                        radius: r32(1.2),
+                                    },
+                                    ..default()
                                 },
-                                ..default()
-                            });
+                                SpawnParticles {
+                                    kind: ParticleKind::Heal,
+                                    distribution: ParticleDistribution::Drawing {
+                                        points: vec![
+                                            enemy.body.collider.position,
+                                            target.body.collider.position,
+                                        ],
+                                        width: r32(0.1),
+                                    },
+                                    density: r32(50.0),
+                                    ..default()
+                                },
+                            ]);
                         }
                     }
 
@@ -666,6 +680,22 @@ impl Model {
                             unit
                         }
                     };
+
+                    if let Some(target) = &target {
+                        self.particles_queue.push(SpawnParticles {
+                            kind: ParticleKind::Shield,
+                            distribution: ParticleDistribution::Drawing {
+                                points: vec![
+                                    enemy.body.collider.position,
+                                    target.body.collider.position,
+                                ],
+                                width: r32(0.1),
+                            },
+                            density: r32(1.0),
+                            ..default()
+                        });
+                    }
+
                     let target = target.map(|target| target.body.collider.position);
                     let target = target.map_or_else(
                         || {
