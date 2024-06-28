@@ -1,3 +1,5 @@
+use geng::prelude::ugli::VertexBuffer;
+
 use crate::prelude::*;
 
 pub struct SwapBuffer {
@@ -48,6 +50,7 @@ impl SwapBuffer {
 pub struct GameRender {
     geng: Geng,
     assets: Rc<Assets>,
+    unit_quad: VertexBuffer<draw2d::TexturedVertex>,
 }
 
 impl GameRender {
@@ -55,6 +58,7 @@ impl GameRender {
         Self {
             geng: geng.clone(),
             assets: assets.clone(),
+            unit_quad: geng_utils::geometry::unit_quad_geometry(geng.ugli()),
         }
     }
 
@@ -353,31 +357,50 @@ impl GameRender {
             framebuffer,
         );
 
-        // Particles TODO instance
-        for (_, particle) in &model.particles {
-            let t = crate::util::smoothstep(particle.lifetime.get_ratio()).as_f32();
-            let transform = mat3::scale_uniform(t);
-            let mut color = match particle.kind {
-                ParticleKind::Draw => self.assets.palette.dash,
-                ParticleKind::Drawing => self.assets.palette.drawing,
-                ParticleKind::WallBreakable => self.assets.palette.wall,
-                ParticleKind::WallBlock => self.assets.palette.wall_block,
-                ParticleKind::Bounce => self.assets.palette.collision,
-                ParticleKind::Damage => self.assets.palette.damage,
-                ParticleKind::Upgrade => self.assets.palette.upgrade,
-                ParticleKind::HitSelf => self.assets.palette.player,
-                ParticleKind::Shield => self.assets.palette.enemy,
-                ParticleKind::Heal => self.assets.palette.idk,
-            };
-            color.a = t;
-            self.draw_collider_transformed(
-                transform,
-                &particle.collider,
-                color,
-                &model.camera,
-                framebuffer,
-            );
+        // Particles
+        #[derive(ugli::Vertex)]
+        struct ParticleInstance {
+            pub i_color: Rgba<f32>,
+            pub i_model_matrix: mat3<f32>,
         }
+        let instances: Vec<_> = model
+            .particles
+            .iter()
+            .map(|(_, particle)| {
+                let t = crate::util::smoothstep(particle.lifetime.get_ratio()).as_f32();
+                let transform = mat3::translate(particle.position.as_f32())
+                    * mat3::scale_uniform(particle.radius.as_f32() * t);
+                let mut color = match particle.kind {
+                    ParticleKind::Draw => self.assets.palette.dash,
+                    ParticleKind::Drawing => self.assets.palette.drawing,
+                    ParticleKind::WallBreakable => self.assets.palette.wall,
+                    ParticleKind::WallBlock => self.assets.palette.wall_block,
+                    ParticleKind::Bounce => self.assets.palette.collision,
+                    ParticleKind::Damage => self.assets.palette.damage,
+                    ParticleKind::Upgrade => self.assets.palette.upgrade,
+                    ParticleKind::HitSelf => self.assets.palette.player,
+                    ParticleKind::Shield => self.assets.palette.enemy,
+                    ParticleKind::Heal => self.assets.palette.idk,
+                };
+                color.a = t;
+                ParticleInstance {
+                    i_color: color,
+                    i_model_matrix: transform,
+                }
+            })
+            .collect();
+        let instances = VertexBuffer::new_dynamic(self.geng.ugli(), instances);
+        ugli::draw(
+            framebuffer,
+            &self.assets.shaders.particles,
+            ugli::DrawMode::TriangleFan,
+            ugli::instanced(&self.unit_quad, &instances),
+            (
+                ugli::uniforms! {},
+                model.camera.uniforms(framebuffer.size().as_f32()),
+            ),
+            ugli::DrawParameters { ..default() },
+        );
 
         // // Remaining dash charge
         // if let Some(drawing) = &model.player.draw_action {

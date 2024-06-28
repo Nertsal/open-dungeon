@@ -121,7 +121,8 @@ impl Default for SpawnParticles {
 #[derive(Debug, Clone)]
 pub struct Particle {
     pub kind: ParticleKind,
-    pub collider: Collider,
+    pub position: Position,
+    pub radius: Coord,
     pub velocity: vec2<Coord>,
     pub lifetime: Bounded<Time>,
 }

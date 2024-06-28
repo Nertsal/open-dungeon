@@ -1546,7 +1546,8 @@ fn spawn_particles(options: SpawnParticles) -> impl Iterator<Item = Particle> {
             let lifetime = rng.gen_range(options.lifetime.clone());
             Particle {
                 kind: options.kind,
-                collider: Collider::new(position, Shape::circle(size)),
+                position,
+                radius: size,
                 velocity,
                 lifetime: Bounded::new_max(lifetime),
             }

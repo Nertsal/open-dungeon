@@ -20,6 +20,7 @@ pub struct Assets {
 pub struct Shaders {
     pub vhs: ugli::Program,
     pub background: ugli::Program,
+    pub particles: ugli::Program,
 }
 
 #[derive(geng::asset::Load)]
