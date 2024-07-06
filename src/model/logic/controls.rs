@@ -82,7 +82,7 @@ impl Model {
                 };
 
                 let drawing = player.draw_action.as_mut().unwrap();
-                let remaining = player.stats.dash.max_distance - drawing.length();
+                let remaining = stats.max_distance - drawing.length();
 
                 let inside = self
                     .rooms

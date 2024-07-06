@@ -371,7 +371,8 @@ impl GameRender {
                 let transform = mat3::translate(particle.position.as_f32())
                     * mat3::scale_uniform(particle.radius.as_f32() * t);
                 let mut color = match particle.kind {
-                    ParticleKind::Draw => self.assets.palette.dash,
+                    ParticleKind::Draw => self.assets.palette.player,
+                    ParticleKind::Cast => self.assets.palette.cast,
                     ParticleKind::Drawing => self.assets.palette.drawing,
                     ParticleKind::WallBreakable => self.assets.palette.wall,
                     ParticleKind::WallBlock => self.assets.palette.wall_block,

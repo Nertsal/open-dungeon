@@ -1070,6 +1070,7 @@ impl Model {
         }
 
         self.particles_queue.push(SpawnParticles {
+            kind: ParticleKind::Cast,
             distribution: ParticleDistribution::Drawing {
                 points: drawing.points_smoothed.clone(),
                 width,

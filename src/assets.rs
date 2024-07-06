@@ -88,7 +88,7 @@ pub struct Palette {
     pub enemy: Rgba<f32>,
     pub health: Rgba<f32>,
     pub drawing: Rgba<f32>,
-    pub dash: Rgba<f32>,
+    pub cast: Rgba<f32>,
     pub damage: Rgba<f32>,
     pub collision: Rgba<f32>,
     pub upgrade: Rgba<f32>,
